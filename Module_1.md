@@ -1,4 +1,4 @@
-# Algorithms-solution: UGATY ERMOLOV IVAN
+# Algorithms-solution: Module 1
 ___
 # Задача 1
 ## В первой задачи у меня вариант 5.
