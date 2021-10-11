@@ -155,3 +155,94 @@ int main()
 ## Память: 2 указателя для массива + (n + m + 2) переменных типа int + 5 указателей для функции + 3 перемменых типа int внутри функции.
 ## Итого: (n + m) * 4 + 48 (байт)
 ___
+# Задача 4
+## В четвертой задаче у меня вариант 1.
+### ID: 54405898
+## Условия:
+Реализовать очередь с динамическим зацикленным буфером. Обрабатывать команды push back и pop front.\
+Каждая команда задаётся как 2 целых числа: a b.  
+a = 2 - pop front  
+a = 3 - push back  
+Если дана команда pop front, то число b - ожидаемое значение.  
+Если команда pop front вызвана для пустой структуры данных, то ожидается “-1”.
+# Вот код:
+```C++
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Queue {
+public:
+    Queue(int size) : bufferSize(size), head(0), tail(0)
+    {
+        buffer = new int[bufferSize];
+    }
+    ~Queue()
+    {
+        delete[] buffer;
+    }
+
+    bool empty()
+    {
+        if (head != tail)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+
+    void push_back(int a)
+    {
+        buffer[tail] = a;
+        tail = (tail + 1) % bufferSize;
+    }
+    int pop_front()
+    {
+        int result = buffer[head];
+        head = (head + 1) % bufferSize;
+        return result;
+    }
+
+private:
+    int* buffer;
+    int bufferSize;
+    int head; 
+    int tail;
+};
+
+
+
+int main()
+{
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+    cout.tie(0);
+    int countOper, oper, num;
+    string ans = "YES";
+    cin >> countOper;
+    Queue arr(countOper);
+    for (int i = 0; i < countOper; i++)
+    {
+        cin >> oper >> num;
+        if (oper == 3)
+        {
+            arr.push_back(num);
+        }
+        else
+        { 
+            if ((arr.empty() && num != -1) || (!arr.empty() && arr.pop_front() != num))
+            {
+                ans = "NO";
+            }
+        }
+    }
+    cout << ans;
+}
+```
+## Ассимптотика: O(n) 
+## Память:  n + 3 переменных типа int + указатель класса + 3 переменных типа int.
+## Итого: n + 28 (байт).
+___
