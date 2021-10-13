@@ -54,10 +54,12 @@ public:
 		this->x = x;
 		this->y = y;
 	}
+	
 	int GetX()
 	{
 		return x;
 	}
+	
 	int GetY()
 	{
 		return y;
@@ -158,7 +160,7 @@ int main()
 ___
 # Задача 4
 ## В четвертой задаче у меня вариант 1.
-### ID: 54405898
+### ID: 54583254
 ## Условия:
 Реализовать очередь с динамическим зацикленным буфером. Обрабатывать команды push back и pop front.\
 Каждая команда задаётся как 2 целых числа: a b.  
@@ -174,10 +176,11 @@ using namespace std;
 
 class Queue {
 public:
-    Queue(int size) : bufferSize(size), head(0), tail(0)
+    Queue(int& size) : bufferSize(size), head(0), tail(0)
     {
         buffer = new int[bufferSize];
     }
+    
     ~Queue()
     {
         delete[] buffer;
@@ -185,28 +188,21 @@ public:
 
     bool empty()
     {
-        if (head != tail)
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
+        return head == tail;
     }
 
-    void push_back(int a)
+    void push_back(int& a)
     {
         buffer[tail] = a;
         tail = (tail + 1) % bufferSize;
     }
+    
     int pop_front()
     {
         int result = buffer[head];
         head = (head + 1) % bufferSize;
         return result;
     }
-
 private:
     int* buffer;
     int bufferSize;
