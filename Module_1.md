@@ -210,8 +210,6 @@ private:
     int tail;
 };
 
-
-
 int main()
 {
     ios::sync_with_stdio(0);
