@@ -2,7 +2,7 @@
 ___
 # Задача 1
 ## В первой задачи у меня вариант 5.
-### ID: 54581058
+### ID: 54672943
 ## Условие:
 Вывести квадраты натуральных чисел от 1 до n, используя только O(n) операций сложения и вычитания (умножением пользоваться нельзя). n ≤ 1000.
 #### Здесь я использую свойство:
@@ -13,11 +13,8 @@ ___
 #include <iostream>
 using namespace std;
 
-int main()
+void Solve()
 {
-    ios::sync_with_stdio(0);
-    cin.tie(0);
-    cout.tie(0);
     int n, num = 0, d = 1;
     cin >> n;
     for (int i = 0; i < n; i++)
@@ -27,6 +24,14 @@ int main()
         cout << num << " ";
     }
 }
+int main()
+{
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+    cout.tie(0);
+    Solve();
+}
+
 ```
 ## Ассимптотика: O(n) 
 ## Память: 3 переменных типа int + 3 указателя.
@@ -34,7 +39,7 @@ int main()
 ___
 # Задача 2
 ## Во второй задаче у меня вариант 2.
-### ID: 54581892
+### ID: 54673214
 ## Условие:
 Вычислить площадь выпуклого n-угольника, заданного координатами своих вершин. Вначале вводится количество вершин, затем последовательно целочисленные координаты всех вершин в порядке обхода по часовой стрелке. n < 1000, координаты < 10000.
 #### Здесь я разбиваю n-угольник на треугольники вот так:
@@ -42,6 +47,7 @@ ___
 # Вот код:
 ```C++
 #include <iostream>
+
 using namespace std;
 
 class Point
@@ -73,12 +79,9 @@ double GetSquareTriangles(Point& a, Point& b, Point& c) // нахожу площ
     return abs(0.5 * ((a.GetX() - c.GetX()) * (b.GetY() - c.GetY()) - (b.GetX() - c.GetX()) * (a.GetY() - c.GetY())));
 }
 
-int main()
+double Solve()
 {
-	ios::sync_with_stdio(0);
-	cin.tie(0);
-	cout.tie(0);
-	int n, x, y;
+    int n, x, y;
 	cin >> n;
 	Point* points = new Point[n];
 	double answer = 0;
@@ -92,8 +95,15 @@ int main()
 	{
 		answer += GetSquareTriangles(points[0], points[i], points[i + 1]);
 	}
-	cout << answer;
 	delete[] points;
+	return answer;
+}
+int main()
+{
+	ios::sync_with_stdio(0);
+	cin.tie(0);
+	cout.tie(0);
+	cout << Solve();
 }
 ```
 ## Ассимптотика: O(n) 
@@ -102,7 +112,7 @@ int main()
 ___
 # Задача 3
 ## В третий задаче у меня вариант 1.
-### ID: 54582863
+### ID: 54673301
 ## Условия:
 Дан отсортированный массив целых чисел A[0..n-1] и массив целых чисел B[0..m-1]. Для каждого элемента массива B[i] найдите минимальный индекс k минимального элемента массива A, равного или превосходящего B[i]: A[k] >= B[i]. Если такого элемента нет, выведите n. n, m ≤ 10000.
 #### Здесь я пробигаюсь по каждому элементу массива B, нахожу, используя бинарный поиск, индекс элемента массива A, большего или равного элементу массива B. Если не нахожу искомый элемент, возращаю значение n.
@@ -129,12 +139,9 @@ int BinarySearch(const int* arr, int& n, int& element)
 	return (first == n || arr[first] < element) ? n : first;
 }
 
-int main()
+void Solve()
 {
-	ios::sync_with_stdio(0);
-	cin.tie(0);
-	cout.tie(0);
-	int n, m;
+    int n, m;
 	cin >> n >> m;
 	int* A = new int[n];
 	int* B = new int[m];
@@ -153,6 +160,15 @@ int main()
 	delete[] A;
 	delete[] B;
 }
+
+int main()
+{
+	ios::sync_with_stdio(0);
+	cin.tie(0);
+	cout.tie(0);
+	Solve();
+	
+}
 ```
 ## Ассимптотика: O(n * log n)
 ## Память: 2 указателя для массива + (n + m + 2) переменных типа int + 5 указателей для функции + 3 перемменых типа int внутри функции.
@@ -160,9 +176,9 @@ int main()
 ___
 # Задача 4
 ## В четвертой задаче у меня вариант 1.
-### ID: 54583254
+### ID: 54673753
 ## Условия:
-Реализовать очередь с динамическим зацикленным буфером. Обрабатывать команды push back и pop front.\
+Реализовать очередь с динамическим зацикленным буфером. Обрабатывать команды push back и pop front.  
 Каждая команда задаётся как 2 целых числа: a b.  
 a = 2 - pop front  
 a = 3 - push back  
@@ -171,7 +187,6 @@ a = 3 - push back
 # Вот код:
 ```C++
 #include <iostream>
-#include <string>
 using namespace std;
 
 class Queue {
@@ -180,7 +195,7 @@ public:
     {
         buffer = new int[bufferSize];
     }
-    
+
     ~Queue()
     {
         delete[] buffer;
@@ -196,7 +211,7 @@ public:
         buffer[tail] = a;
         tail = (tail + 1) % bufferSize;
     }
-    
+
     int pop_front()
     {
         int result = buffer[head];
@@ -206,38 +221,121 @@ public:
 private:
     int* buffer;
     int bufferSize;
-    int head; 
+    int head;
     int tail;
 };
 
-int main()
+string Solve()
 {
-    ios::sync_with_stdio(0);
-    cin.tie(0);
-    cout.tie(0);
     int countOper, oper, num;
-    string ans = "YES";
     cin >> countOper;
     Queue arr(countOper);
     for (int i = 0; i < countOper; i++)
     {
         cin >> oper >> num;
-        if (oper == 3)
+        switch (oper)
         {
+        case 3:
             arr.push_back(num);
-        }
-        else
-        { 
+            break;
+        default:
             if ((arr.empty() && num != -1) || (!arr.empty() && arr.pop_front() != num))
             {
-                ans = "NO";
+                return "NO";
             }
+            break;
         }
     }
-    cout << ans;
+    return "YES";
 }
+int main()
+{
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+    cout.tie(0);
+    cout << Solve();
+}
+
 ```
 ## Ассимптотика: O(n) 
 ## Память:  n + 3 переменных типа int + указатель класса + 3 переменных типа int.
 ## Итого: n + 28 (байт).
+___
+# Задача 5
+## В пятой задаче у меня вариант 3.
+### ID: 54883135
+## Условия:
+Дана последовательность N прямоугольников различной ширины и высоты (wi, hi). Прямоугольники расположены, начиная с точки (0, 0), на оси ОХ вплотную друг за другом (вправо).
+Требуется найти M - площадь максимального прямоугольника (параллельного осям координат), который можно вырезать из этой фигуры  
+В первой строке задано число N (1 ≤ N ≤ 10000).  
+Далее идет N строк. В каждой строке содержится два числа width и height: ширина и высота i-го прямоугольника.  
+(0 < width ≤ 10000, 0 ≤ height ≤ 10000)
+#### Здесь я для каждого элемента нахожу участок где он ниже других.
+# Вот код:
+```C++
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int Solve(vector <int>& temp, vector <pair<int, int>>& rectangles, vector <pair<int, int>>& lens, int& n)
+{
+	int k, ans = 0;
+	for (int i = 0; i < n; i++)
+	{
+		k = 0;
+		while (i != k && rectangles[i - k - 1].second >= rectangles[i].second)
+		{
+			k++;
+		}
+		lens[i].first = temp[i - k] - rectangles[i - k].first;
+	}
+	for (int i = n - 1; i >= 0; i--)
+	{
+		k = 0;
+		while (i + k != n - 1 && rectangles[i + k + 1].second >= rectangles[i].second)
+		{
+			k++;
+		}
+		lens[i].second = temp[i + k];
+	}
+	for (int i = 0; i < n; i++)
+	{
+		ans = max(ans, rectangles[i].second * (lens[i].second - lens[i].first));
+	}
+	return ans;
+}
+
+
+
+
+
+int main()
+{
+	ios::sync_with_stdio(0);
+	cin.tie(0);
+	cout.tie(0);
+	int n;
+	cin >> n;
+	vector <int> temp(n); // доп массив, чтобы можно было за 1 операцию найти сумму на определенном участке.
+	vector <pair<int, int>> rectangles(n);
+	vector <pair<int, int>> lens(n); // Координаты участка где i - прямоугольник ниже остальных pair<начало, конец>
+	cin >> rectangles[0].first >> rectangles[0].second;
+	temp[0] = rectangles[0].first;
+	for (int i = 1; i < n; i++)
+	{
+		cin >> rectangles[i].first >> rectangles[i].second;
+		temp[i] = temp[i - 1] + rectangles[i].first;
+	}
+	cout << Solve(temp, rectangles, lens, n);
+	temp.clear();
+	temp.shrink_to_fit();
+	rectangles.clear();
+	rectangles.shrink_to_fit();
+	lens.clear();
+	lens.shrink_to_fit();
+}
+```
+## Ассимптотика: O(n) 
+## Память:  переменная типа int + указатель + 3 указателя на векторы + 5 * n переменных int + 6 указателей для функций + 2 переменных типа int внутри функции.
+## Итого: 20 * n + 52 (байт).
 ___
