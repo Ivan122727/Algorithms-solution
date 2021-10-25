@@ -191,11 +191,17 @@ using namespace std;
 
 class Queue {
 public:
-    Queue(int& size) : bufferSize(size), head(0), tail(0)
+    
+    Queue() : bufferSize(1), head(0), tail(0), countElem(0)
     {
         buffer = new int[bufferSize];
     }
 
+    Queue(int& size) : bufferSize(size << 1), head(size), tail(size), countElem(0)
+    {
+        buffer = new int[bufferSize];
+    }
+    
     ~Queue()
     {
         delete[] buffer;
@@ -206,23 +212,62 @@ public:
         return head == tail;
     }
 
+    void IncreaseBuffer()
+    {
+        bufferSize <<= 1;
+        int* temp = new int[bufferSize];
+        for (int i = 0; i < countElem; i++)
+        {
+            temp[i] = buffer[head + i];
+        }
+        delete[] buffer;
+        buffer = temp;
+        head = 0;
+        tail = countElem + 1;
+    }
+
+    void ReduceBuffer()
+    {
+        bufferSize >>= 1;
+        int* temp = new int[bufferSize];
+        for (int i = 0; i < countElem; i++)
+        {
+            temp[i] = buffer[head + i];
+        }
+        delete[] buffer;
+        buffer = temp;
+        head = 0;
+        tail = countElem + 1;
+    }
     void push_back(int& a)
     {
+        countElem++;
+        if (countElem == bufferSize)
+        {
+            IncreaseBuffer();
+        }
         buffer[tail] = a;
         tail = (tail + 1) % bufferSize;
+
     }
 
     int pop_front()
     {
+        if (countElem << 2 == bufferSize)
+        {
+            ReduceBuffer();
+        }
         int result = buffer[head];
         head = (head + 1) % bufferSize;
         return result;
     }
+
 private:
     int* buffer;
     int bufferSize;
     int head;
     int tail;
+    int countElem;
 };
 
 string Solve()
@@ -255,6 +300,7 @@ int main()
     cout.tie(0);
     cout << Solve();
 }
+
 
 ```
 ## Ассимптотика: O(n) 
