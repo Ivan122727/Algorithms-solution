@@ -1,0 +1,26 @@
+ ```C++
+#include <iostream>
+using namespace std;
+
+void Solve()
+{
+    int n, num = 0, d = 1;
+    cin >> n;
+    for (int i = 0; i < n; i++)
+    {
+        num += d;
+        d += 2;
+        cout << num << " ";
+    }
+}
+int main()
+{
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+    cout.tie(0);
+    Solve();
+}
+
+```
+## Ассимптотика: O(n) 
+## Память: T(1)
