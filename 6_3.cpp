@@ -32,10 +32,10 @@ int main() {
     std::ios::sync_with_stdio(0);
     std::cin.tie(0);
     std::cout.tie(0);
-    int n, arr, dep, ans = 1;;
+    int n;
     std::cin >> n;
-
     std::priority_queue<int, std::vector<int>, std::greater<int>> deadEnds;
+    int arr, dep, ans = 1;
     std::cin >> arr >> dep;
     deadEnds.push(dep);
     for (int i = 1; i < n; i++)
