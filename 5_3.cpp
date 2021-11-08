@@ -1,4 +1,4 @@
-﻿/*
+/*
 ID: 54883135
 Дана последовательность N прямоугольников различной ширины и высоты (wi, hi). 
 Прямоугольники расположены, начиная с точки (0, 0), на оси ОХ вплотную друг за другом (вправо). Требуется найти M - площадь максимального прямоугольника (параллельного осям координат), 
@@ -6,24 +6,15 @@ ID: 54883135
 В первой строке задано число N (1 ≤ N ≤ 10000).
 Далее идет N строк. В каждой строке содержится два числа width и height: ширина и высота i-го прямоугольника.
 (0 < width ≤ 10000, 0 ≤ height ≤ 10000)
+Асимптотика: O(n)
+Память: T(n)
 */
 #include <iostream>
 #include <vector>
 
-int Solve()
+int Solve(std::vector <int> temp, std::vector <std::pair<int, int>> rectangles, std::vector <std::pair<int, int>> lens, int n)
 {
-	int n, step, ans = 0;
-	std::cin >> n;
-	std::vector <int> temp(n); // доп массив, чтобы можно было за 1 операцию найти сумму на определенном участке.
-	std::vector <std::pair<int, int>> rectangles(n);
-	std::vector <std::pair<int, int>> lens(n); // Координаты участка где i - прямоугольник ниже остальных pair<начало, конец>
-	std::cin >> rectangles[0].first >> rectangles[0].second;
-	temp[0] = rectangles[0].first;
-	for (int i = 1; i < n; i++)
-	{
-		std::cin >> rectangles[i].first >> rectangles[i].second;
-		temp[i] = temp[i - 1] + rectangles[i].first;
-	}
+	int step, ans = 0;
 	for (int i = 0; i < n; i++)
 	{
 		step = 0;
@@ -46,12 +37,6 @@ int Solve()
 	{
 		ans = std::max(ans, rectangles[i].second * (lens[i].second - lens[i].first));
 	}
-	temp.clear();
-	temp.shrink_to_fit();
-	rectangles.clear();
-	rectangles.shrink_to_fit();
-	lens.clear();
-	lens.shrink_to_fit();
 	return ans;
 }
 
@@ -60,10 +45,18 @@ int main()
 	std::ios::sync_with_stdio(0);
 	std::cin.tie(0);
 	std::cout.tie(0);
-	std::cout << Solve();
+	int n;
+	std::cin >> n;
+	std::vector <int> temp(n);  // доп массив, чтобы можно было за 1 операцию найти сумму на определенном участке.
+	std::vector <std::pair<int, int>> rectangles(n);
+	std::vector <std::pair<int, int>> lens(n);  // Координаты участка где i - прямоугольник ниже остальных pair<начало, конец>
+	std::cin >> rectangles[0].first >> rectangles[0].second;
+	temp[0] = rectangles[0].first;
+	for (int i = 1; i < n; i++)
+	{
+		std::cin >> rectangles[i].first >> rectangles[i].second;
+		temp[i] = temp[i - 1] + rectangles[i].first;
+	}
+	std::cout << Solve(temp, rectangles, lens, n) << '\n';
 	return 0;
 }
-/*
-Ассимптотика: O(n)
-Память: T(n)
-*/
