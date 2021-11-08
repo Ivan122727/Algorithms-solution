@@ -1,32 +1,24 @@
-﻿/*
+/*
 ID: 55601055
 Вычислить площадь выпуклого n-угольника, заданного координатами своих вершин. Вначале вводится количество вершин,
 затем последовательно целочисленные координаты всех вершин в порядке обхода по часовой стрелке. n < 1000, координаты < 10000.
+Асимптотика: O(n)
+Память: T(n)
 */
 #include <iostream>
 #include <vector>
 
-void GetSquareTriangles(std::pair<int, int>& a, std::pair<int, int>& b, std::pair<int, int>& c, double& square)
+double GetSquareTriangles(std::pair<int, int>& a, std::pair<int, int>& b, std::pair<int, int>& c)
 {
-    square = abs(((b.first - a.first) * (c.second - a.second) - (b.second - a.second) * (c.first - a.first))) * 0.5;
-    return;
+    return abs(((b.first - a.first) * (c.second - a.second) - (b.second - a.second) * (c.first - a.first))) * 0.5;
 }
 
-double Solve()
+double Solve(std::vector<std::pair<int, int>>& points, int n)
 {
-    int n;
-    double answer = 0, square = 0;
-    std::cin >> n;
-    std::vector <std::pair<int, int>> points(n);
-    for (int i = 0; i < n; i++)
-    {
-        std::cin >> points[i].first >> points[i].second;
-    }
-
+    double answer = 0;
     for (int i = 1; i < n - 1; i++)
     {
-        GetSquareTriangles(points[0], points[i], points[i + 1], square);
-        answer += square;
+        answer += GetSquareTriangles(points[0], points[i], points[i + 1]);
     }
     return answer;
 }
@@ -36,10 +28,13 @@ int main()
     std::ios::sync_with_stdio(0);
     std::cin.tie(0);
     std::cout.tie(0);
-    std::cout << Solve();
+    int n;
+    std::cin >> n;
+    std::vector<std::pair<int, int>> points(n);
+    for (int i = 0; i < n; i++)
+    {
+        std::cin >> points[i].first >> points[i].second;
+    }
+    std::cout << Solve(points, n) << "\n";
     return 0;
 }
-/*
-Ассимптотика: O(n)
-Память: T(n)
-*/
