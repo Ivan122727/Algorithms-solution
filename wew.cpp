@@ -1,4 +1,4 @@
-﻿/*
+/*
 Реализовать очередь с динамическим зацикленным буфером. Обрабатывать команды push back и pop front.
 Каждая команда задаётся как 2 целых числа: a b.
 a = 2 - pop front
@@ -10,118 +10,101 @@ ID: 55366866
 Память: T(n)
 */
 #include <iostream>
+#include <string>
 
 class Queue {
 public:
-
-    Queue() : bufferSize(1), head(0), tail(0), countElem(0)
-    {
-        buffer = new int[bufferSize];
-    }
-
-    Queue(int& size) : bufferSize(size << 1), head(size), tail(size), countElem(0)
-    {
-        buffer = new int[bufferSize];
-    }
+    Queue(int size = 1) : bufferSize(size * 2), head(size), tail(size), countElem(0), buffer(new int[bufferSize]) {};
 
     ~Queue()
     {
         delete[] buffer;
     }
 
-    bool empty()
+    const bool empty()
     {
         return head == tail;
     }
 
-    void IncreaseBuffer()
-    {
-        bufferSize <<= 1;
-        int* temp = new int[bufferSize];
-        for (int i = 0; i < countElem; i++)
-        {
-            temp[i] = buffer[head + i];
-        }
-        delete[] buffer;
-        buffer = temp;
-        head = 0;
-        tail = countElem + 1;
-    }
-
-    void ReduceBuffer()
-    {
-        bufferSize >>= 1;
-        int* temp = new int[bufferSize];
-        for (int i = 0; i < countElem; i++)
-        {
-            temp[i] = buffer[head + i];
-        }
-        delete[] buffer;
-        buffer = temp;
-        head = 0;
-        tail = countElem + 1;
-    }
-
-    void push_back(int& a)
-    {
-        countElem++;
-        if (countElem == bufferSize)
-        {
-            IncreaseBuffer();
-        }
-        buffer[tail] = a;
-        tail = (tail + 1) % bufferSize;
-
-    }
-
     int pop_front()
     {
+        countElem--;
+        int result = buffer[head];
         if (countElem << 2 == bufferSize)
         {
-            ReduceBuffer();
+            ChangeBuffer(false);
         }
-        int result = buffer[head];
         head = (head + 1) % bufferSize;
         return result;
     }
 
+    void push_back(int a)
+    {
+        countElem++;
+        buffer[tail] = a;
+        if (countElem == bufferSize)
+        {
+            ChangeBuffer(true);
+        }
+        tail = (tail + 1) % bufferSize;
+
+    }
+
 private:
     int* buffer;
-    int bufferSize;
-    int head;
-    int tail;
-    int countElem;
+    int bufferSize = 1;
+    int head = 0;
+    int tail = 0;
+    int countElem = 0;
+
+    void ChangeBuffer(bool increase)
+    {
+        if (increase)
+        {
+            bufferSize <<= 1;
+        }
+        else
+        {
+            bufferSize >>= 1;
+        }
+        int* temp = new int[bufferSize];
+        for (int i = 0; i < countElem; i++)
+        {
+            temp[i] = buffer[head + i];
+        }
+        buffer = temp;
+        head = 0;
+        tail = countElem;
+    }
+    
 };
 
-std::string Solve()
-{
-    int countOper, oper, num;
-    std::cin >> countOper;
-    Queue arr(countOper);
-    for (int i = 0; i < countOper; i++)
-    {
-        std::cin >> oper >> num;
-        switch (oper)
-        {
-        case 3:
-            arr.push_back(num);
-            break;
-        default:
-            if ((arr.empty() && num != -1) || (!arr.empty() && arr.pop_front() != num))
-            {
-                return "NO";
-            }
-            break;
-        }
-    }
-    return "YES";
-}
 int main()
 {
     std::ios::sync_with_stdio(0);
     std::cin.tie(0);
     std::cout.tie(0);
-    std::cout << Solve();
+    int countOper, oper, num;
+    std::string answer = "YES";
+    std::cin >> countOper;
+    Queue arr(countOper);
+    for (int i = 0; i < countOper; i++)
+    {
+        std::cin >> oper >> num;
+        if (oper == 3)
+        {
+            arr.push_back(num);
+        }
+        else
+        {
+            if ((arr.empty() && num != -1) || (!arr.empty() && arr.pop_front() != num))
+            {
+                answer = "NO";
+            }
+        }
+    }
+    std::cout << answer << '\n';
+    return 0;
 }
 
 
