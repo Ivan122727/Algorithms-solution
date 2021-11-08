@@ -12,12 +12,11 @@ ID: 54883135
 #include <iostream>
 #include <vector>
 
-int Solve(std::vector <int> temp, std::vector <std::pair<int, int>> rectangles, std::vector <std::pair<int, int>> lens, int n)
+int Solve(std::vector<int> temp, std::vector<std::pair<int, int>> rectangles, std::vector<std::pair<int, int>> lens, int n)
 {
-	int step, ans = 0;
 	for (int i = 0; i < n; i++)
 	{
-		step = 0;
+		int step = 0;
 		while (i != step && rectangles[i - step - 1].second >= rectangles[i].second)
 		{
 			step++;
@@ -26,13 +25,14 @@ int Solve(std::vector <int> temp, std::vector <std::pair<int, int>> rectangles, 
 	}
 	for (int i = n - 1; i >= 0; i--)
 	{
-		step = 0;
+		int step = 0;
 		while (i + step != n - 1 && rectangles[i + step + 1].second >= rectangles[i].second)
 		{
 			step++;
 		}
 		lens[i].second = temp[i + step];
 	}
+	int  ans = 0;
 	for (int i = 0; i < n; i++)
 	{
 		ans = std::max(ans, rectangles[i].second * (lens[i].second - lens[i].first));
@@ -47,9 +47,9 @@ int main()
 	std::cout.tie(0);
 	int n;
 	std::cin >> n;
-	std::vector <int> temp(n);  // доп массив, чтобы можно было за 1 операцию найти сумму на определенном участке.
-	std::vector <std::pair<int, int>> rectangles(n);
-	std::vector <std::pair<int, int>> lens(n);  // Координаты участка где i - прямоугольник ниже остальных pair<начало, конец>
+	std::vector<int> temp(n);  // Доп массив, чтобы можно было за 1 операцию найти сумму на определенном участке.
+	std::vector<std::pair<int, int>> rectangles(n);
+	std::vector<std::pair<int, int>> lens(n);  // Координаты участка где i - прямоугольник ниже остальных pair<начало, конец>
 	std::cin >> rectangles[0].first >> rectangles[0].second;
 	temp[0] = rectangles[0].first;
 	for (int i = 1; i < n; i++)
