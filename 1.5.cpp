@@ -6,7 +6,7 @@ ID: 54672943
 */
 #include <iostream>
 
-void Solve(int& num, int& d)
+void GetNextSquare(int& num, int& d)
 {
     num += d;
     d += 2;
@@ -21,7 +21,7 @@ int main()
     std::cin >> n;
     for (int i = 0; i < n; i++)
     {
-        Solve(num, d);
+        GetNextSquare(num, d);
         std::cout << num << " ";
     }   
     std::cout << "\n";
