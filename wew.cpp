@@ -83,6 +83,24 @@ bool NotPossibleOperation(Queue& arr, std::pair<int, int> input)
     return (arr.empty() && input.second != -1) || (!arr.empty() && arr.pop_front() != input.second);
 }
 
+void ProcessInput(std::string& answer, std::pair<int, int> input, Queue& arr)
+{
+    if (answer != "NO")
+    {
+        if (input.first == 3)
+        {
+            arr.push_back(input.second);
+        }
+        else
+        {
+            if (NotPossibleOperation(arr, input))
+            {
+                answer = "NO";
+            }
+        }
+    }
+}
+
 int main()
 {
     std::ios::sync_with_stdio(0);
@@ -97,20 +115,7 @@ int main()
     {
         std::cin >> input.first >> input.second;
         assert(input.first >= 2 && input.first <= 3);
-        if (answer != "NO")
-        {
-            if (input.first == 3)
-            {
-                arr.push_back(input.second);
-            }
-            else
-            {
-                if (NotPossibleOperation(arr, input))
-                {
-                    answer = "NO";
-                }
-            }
-        }
+        ProcessInput(answer, input, arr);
     }
     std::cout << answer << '\n';
     return 0;
