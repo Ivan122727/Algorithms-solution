@@ -11,6 +11,7 @@ ID: 55366866
 */
 #include <iostream>
 #include <string>
+#include <assert.h>
 
 class Queue {
 public:
@@ -21,16 +22,15 @@ public:
         delete[] buffer;
     }
 
-    const bool empty()
+    bool empty() const
     {
         return head == tail;
     }
 
     int pop_front()
     {
-        countElem--;
         int result = buffer[head];
-        if (countElem << 2 == bufferSize)
+        if (--countElem << 2 == bufferSize)
         {
             ChangeBuffer(false);
         }
@@ -40,9 +40,8 @@ public:
 
     void push_back(int a)
     {
-        countElem++;
         buffer[tail] = a;
-        if (countElem == bufferSize)
+        if (++countElem == bufferSize)
         {
             ChangeBuffer(true);
         }
@@ -76,35 +75,43 @@ private:
         head = 0;
         tail = countElem;
     }
-    
+
 };
+
+bool NotPossibleOperation(Queue& arr, std::pair<int, int> input)
+{
+    return (arr.empty() && input.second != -1) || (!arr.empty() && arr.pop_front() != input.second);
+}
 
 int main()
 {
     std::ios::sync_with_stdio(0);
     std::cin.tie(0);
     std::cout.tie(0);
-    int countOper, oper, num;
-    std::string answer = "YES";
+    int countOper;
     std::cin >> countOper;
     Queue arr(countOper);
+    std::pair<int, int> input;
+    std::string answer = "YES";
     for (int i = 0; i < countOper; i++)
     {
-        std::cin >> oper >> num;
-        if (oper == 3)
+        std::cin >> input.first >> input.second;
+        assert(input.first >= 2 && input.first <= 3);
+        if (answer != "NO")
         {
-            arr.push_back(num);
-        }
-        else
-        {
-            if ((arr.empty() && num != -1) || (!arr.empty() && arr.pop_front() != num))
+            if (input.first == 3)
             {
-                answer = "NO";
+                arr.push_back(input.second);
+            }
+            else
+            {
+                if (NotPossibleOperation(arr, input))
+                {
+                    answer = "NO";
+                }
             }
         }
     }
     std::cout << answer << '\n';
     return 0;
 }
-
-
