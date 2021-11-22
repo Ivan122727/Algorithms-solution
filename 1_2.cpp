@@ -44,7 +44,6 @@ void SelectionSort(std::vector<std::pair<int, int>>& arr, int n)
 	}
 }
 
-
 int main()
 {
 	std::ios::sync_with_stdio(0);
