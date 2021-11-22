@@ -32,7 +32,8 @@ int main() {
 	int n;
 	std::cin >> n;
 	std::vector<std::pair<int, int>> events;
-	for (int i = 0; i < n; i++) {
+	for (int i = 0; i < n; i++) 
+	{
 		int start, finish;
 		std::cin >> start >> finish;
 		events.push_back({ start, 1 });
