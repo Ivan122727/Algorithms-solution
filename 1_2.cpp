@@ -1,4 +1,12 @@
-﻿#include <iostream>
+/*
+ID: 58919113
+Условие:
+Задано 
+N точек на плоскости. Указать (N−1) -звенную несамопересекающуюся незамкнутую ломаную, проходящую через все эти точки.
+Асимптотика: O(n²)
+Память: O(n)
+*/
+#include <iostream>
 #include <vector>
 
 void Swap(std::pair<int, int>& a, std::pair<int, int>& b)
