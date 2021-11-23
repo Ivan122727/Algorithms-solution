@@ -13,7 +13,7 @@ bool comp(std::pair<int, int> a, std::pair<int, int> b)
 {
 	if (a.first == b.first) 
 	{
-		return a.second > b.second;
+		return b.second < a.second;
 	}
 	return a.first < b.first;
 }
