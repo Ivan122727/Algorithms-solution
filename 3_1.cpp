@@ -1,54 +1,108 @@
-/*
-ID: 
-Дан отсортированный массив целых чисел A[0..n-1] и массив целых чисел B[0..m-1]. 
-Для каждого элемента массива B[i] найдите минимальный индекс k минимального элемента массива A, равного или превосходящего B[i]: A[k] >= B[i]. Если такого элемента нет, выведите n.
-n, m ≤ 10000
-Асимтотика: O(n * logn)
-Память: T(n + m)
+﻿/*
+ID: 59077080	
+Условие:
+Даны неотрицательные целые числа n, k и массив целых чисел из диапазона [0..109] размера n.
+Требуется найти k-ю порядковую статистику. т.е. напечатать число, которое бы стояло на позиции с индексом k ∈[0..n-1] в отсортированном массиве.
+Напишите нерекурсивный алгоритм.
+Требования к дополнительной памяти: O(n).
+Требуемое среднее время работы: O(n).
+Функцию Partition следует реализовывать методом прохода двумя итераторами в одном направлении.
+Описание для случая прохода от начала массива к концу:
+Выбирается опорный элемент.
+Опорный элемент меняется с последним элементом массива.
+Во время работы Partition в начале массива содержатся элементы, не бОльшие опорного. Затем располагаются элементы, строго бОльшие опорного. В конце массива лежат нерассмотренные элементы. Последним элементом лежит опорный.
+Итератор (индекс) i указывает на начало группы элементов, строго бОльших опорного.
+Итератор j больше i, итератор j указывает на первый нерассмотренный элемент.
+Шаг алгоритма. Рассматривается элемент, на который указывает j. Если он больше опорного, то сдвигаем j. Если он не больше опорного, то меняем a[i] и a[j] местами, сдвигаем i и сдвигаем j.
+В конце работы алгоритма меняем опорный и элемент, на который указывает итератор i.
+Асимптотика: T(n) = O(n)
+Память: M(n) = O(n)
 */
 #include <iostream>
 
-int BinarySearch(const int* arr, int n, int element)
+template<class T>
+int Partition(T* arr, int left, int right) 
 {
-	int mid, first = 0, last = n;
-	while (first < last)
-	{
-		mid = (first + last) / 2;
-		if (arr[mid] < element)
-		{
-			first = mid + 1;
-		}
-		else
-		{
-			last = mid;
-		}
-	}
-	return (first == n || arr[first] < element) ? n : first;
+    if (right - left <= 1)
+    {
+        return left;
+    }
+    if (arr[left] > arr[(left + right) / 2])  //Выбираем опорный элемент(медиана трех)
+    {
+        if (arr[left] < arr[right - 1]) 
+        {
+            std::swap(arr[left], arr[right - 1]);
+        }
+        else if (arr[(left + right) / 2] > arr[right - 1])
+        {
+            std::swap(arr[(left + right) / 2], arr[right - 1]);
+        }
+    }
+    else
+    {
+        if (arr[left] > arr[right - 1]) 
+        { 
+            std::swap(arr[left], arr[right - 1]);
+        }
+        else if (arr[(left + right) / 2] < arr[right - 1]) 
+        {
+            std::swap(arr[(left + right) / 2], arr[right - 1]);
+        }
+    }
+    int pivot = arr[right - 1];
+    int i = left, j = left;
+    while (j < right - 1) 
+    {
+        if (!(arr[j] > pivot)) 
+        { 
+            std::swap(arr[i], arr[j]);
+            j++;
+            i++;
+        }
+        else
+        {
+            j++;
+        }
+    }
+    std::swap(arr[i], arr[j]);
+    return i;
 }
 
-int main()
+template<class T>
+int OrdinalStatistics(T* arr, int len, int k) 
 {
-	std::ios::sync_with_stdio(0);
-	std::cin.tie(0);
-	std::cout.tie(0);
-	int n, m;
-	std::cin >> n >> m;
-	int* A = new int[n];
-	int* B = new int[m];
-	for (int i = 0; i < n; i++)
-	{
-		std::cin >> A[i];
-	}
-	for (int i = 0; i < m; i++)
-	{
-		std::cin >> B[i];
-	}
-	for (int i = 0; i < m; i++)
-	{
-		std::cout << BinarySearch(A, n, B[i]) << ' ';
-	}
-	delete[] A;
-	delete[] B;
-	std::cout << '\n';
-	return 0;
+    int part, left = 0, right = len;
+    while (true) 
+    {
+        part = Partition(arr, left, right);
+        if (part == k) 
+        {
+            return arr[part];
+        }
+        if (part > k)
+        {
+            right = part;
+        }
+        if (part < k)
+        {
+            left = part + 1;
+        }
+    }
+}
+
+int main() 
+{
+    std::ios::sync_with_stdio(0);
+    std::cin.tie(0);
+    std::cout.tie(0);
+    unsigned int n, k;
+    std::cin >> n >> k;
+    int* arr = new int[n];
+    for (int i = 0; i < n; i++) 
+    {
+        std::cin >> arr[i];
+    }
+    std::cout << OrdinalStatistics(arr, n, k) << '\n';
+    delete[] arr;
+    return 0;
 }
