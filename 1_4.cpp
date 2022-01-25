@@ -1,107 +1,134 @@
-﻿/*
-Дано число N < 10^6 и последовательность целых чисел из [-231..231] длиной N.
+/*
+ID: 62797166
+Условие:
+Дано число N < 106 и последовательность целых чисел из [-231..231] длиной N.
 Требуется построить бинарное дерево поиска, заданное наивным порядком вставки. Т.е., при добавлении очередного числа K в дерево с корнем root, если root→Key ≤ K, то узел K добавляется в правое поддерево root; иначе в левое поддерево root.
 Выведите элементы в порядке level-order (по слоям, “в ширину”).
-Асипмтотика: 0(n)
-Память: T(n)
-ID: 62900635	
+Асиптотика: T(n) = O(n log n)
+Память: M(n) = O(n)
 */
-
 #include <iostream>
-#include <cassert>
 #include <queue>
 #include <string>
 
-struct BinnaryNode
+template<class T>
+struct Node
 {
-    int value;
-    BinnaryNode* Left;
-    BinnaryNode* Right;
-    BinnaryNode* Parent;
-    explicit BinnaryNode(int value = 0) : value(value), Parent(nullptr), Left(nullptr), Right(nullptr) {}
+	T value;
+	Node<T>* left = nullptr;
+	Node<T>* right = nullptr;
+	explicit Node(const T& value) : value(value) {};
 };
 
-std::string BFS(BinnaryNode* root)
+template<class T>
+class Tree
 {
-    std::string answer = "";
-    std::queue<BinnaryNode*> q;
-    if (root != nullptr)
+public:
+    Tree() {};
+    ~Tree() { CleanTree(root); };
+    std::string BFS()
     {
-        q.push(root);
+        std::string answer = "";
+        std::queue<Node<T>*> q;
+        if (root == nullptr)
+        {
+            return answer;
+        }
+        Node<T>* node = root;
+        q.push(node);
+        while (!q.empty())
+        {
+            node = q.front();
+            q.pop();
+            answer += std::to_string(node->value) + " ";
+            if (node->left != nullptr)
+            {
+                q.push(node->left);
+            }
+            if (node->right != nullptr)
+            {
+                q.push(node->right);
+            }
+        }
+        return answer;
     }
-    while (!q.empty())
+    void AddElem(T elem)
     {
-        BinnaryNode* node = q.front();
-        q.pop();
-        answer += std::to_string(node->value) + " ";
-        if(node->Left != nullptr)
+        if (root == nullptr)
         {
-            q.push(node->Left);
+            root = new Node<T>(elem);
+            return;
         }
-        if (node->Right != nullptr)
+        Node<T>* tree = root;
+        bool isDone = false;
+        while (!isDone)
         {
-            q.push(node->Right);
+            if (elem < tree->value)
+            {
+                if (tree->left == nullptr)
+                {
+                    tree->left = new Node<T>(elem);
+                    isDone = true;
+                }
+                else
+                {
+                    tree = tree->left;
+                }
+            }
+            else
+            {
+                if (tree->right == nullptr)
+                {
+                    tree->right = new Node<T>(elem);
+                    isDone = true;
+                }
+                else
+                {
+                    tree = tree->right;
+                }
+            }
         }
     }
-    return answer;
-}
-
-void AddElem(BinnaryNode* root, BinnaryNode* newNode)
-{
-    assert(root != nullptr);
-    assert(newNode != nullptr);
-    //Left:
-    if (newNode->value < root->value)
+    void CleanTree(Node<T>* node)
     {
-        if (root->Left != nullptr)
+        if (node == nullptr)
         {
-            AddElem(root->Left, newNode);
+            return;
         }
-        else
+        std::queue<Node<T>*> q;
+        q.push(node);
+        while (!q.empty())
         {
-            root->Left = newNode;
-            newNode->Parent = root;
-        }
-    }
-    //Right:
-    else
-    {
-        if (root->Right != nullptr)
-        {
-            AddElem(root->Right, newNode);
-        }
-        else
-        {
-            root->Right = newNode;
-            newNode->Parent = root;
+            node = q.front();
+            q.pop();
+            if (node->left != nullptr)
+            {
+                q.push(node->left);
+            }
+            if (node->right != nullptr)
+            {
+                q.push(node->right);
+            }
+            delete node;
         }
     }
-
-}
-
-void CleanTree(BinnaryNode* node)
-{
-    if (node == nullptr)
-    {
-        return;
-    }
-    CleanTree(node->Left);
-    CleanTree(node->Right);
-    delete node;
-}
+private:
+    Node<T>* root = nullptr;
+};
 
 int main()
 {
-    int n, value;
-    std::cin >> n >> value;
-    BinnaryNode* root = new BinnaryNode(value);
-    for (int i = 1; i < n; i++)
+    std::ios::sync_with_stdio(0);
+    std::cin.tie(0);
+    std::cout.tie(0);
+    Tree<int> tree;
+    int n, elem;
+    std::cin >> n;
+    for (int i = 0; i < n; i++)
     {
-        std::cin >> value;
-        AddElem(root, new BinnaryNode(value));
+        std::cin >> elem;
+        tree.AddElem(elem);
     }
-    std::cout << BFS(root);
-    CleanTree(root);
-    std::cout << "\n";
+    std::cout << tree.BFS() << "\n";
     return 0;
 }
