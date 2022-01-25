@@ -1,41 +1,30 @@
-﻿#include <iostream>
+﻿/*
+ID: 58919113
+Задано N точек на плоскости. Указать (N-1)-звенную несамопересекающуюся незамкнутую ломаную, проходящую через все эти точки.
+Указание: стройте ломаную в порядке возрастания x-координаты.
+Если имеются две точки с одинаковой x-координатой, то расположите раньше ту точку, у которой y-координата меньше.
+Асимптотика: T(n) = O(n^2)
+Память: M(n) = O(n)
+*/
+#include <iostream>
 #include <vector>
 
-void Swap(std::pair<int, int>& a, std::pair<int, int>& b)
+template<class T>
+void InsertionSort(std::vector<T>& arr, int n)
 {
-	std::pair<int, int> temp = a;
-	a = b;
-	b = temp;
-}
-
-bool Comp(std::pair<int, int> a, std::pair<int, int> b)
-{
-	if (b.first == a.first)
+	T temp;
+	int j;
+	for (int i = 1; i < n; i++)
 	{
-		return a.second < b.second;
-	}
-	else
-	{
-		return a.first < b.first;
-	}
-}
-
-void SelectionSort(std::vector<std::pair<int, int>>& arr, int n)
-{
-	for (int i = 0; i < n - 1; i++)
-	{
-		int minIndex = i;
-		for (int j = i + 1; j < n; j++)
+		temp = arr[i];
+		j = i - 1;
+		for (; j >= 0 && temp < arr[j]; j--)
 		{
-			if (Comp(arr[j], arr[minIndex]))
-			{
-				minIndex = j;
-			}
+			arr[j + 1] = arr[j];
 		}
-		Swap(arr[i], arr[minIndex]);
+		arr[j + 1] = temp;
 	}
 }
-
 
 int main()
 {
@@ -49,10 +38,12 @@ int main()
 	{
 		std::cin >> arr[i].first >> arr[i].second;
 	}
-	SelectionSort(arr, n);
+	InsertionSort(arr, n);
 	for (int i = 0; i < n; i++)
 	{
 		std::cout << arr[i].first << " " << arr[i].second << "\n";
 	}
 	return 0;
 }
+
+
