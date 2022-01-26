@@ -11,21 +11,47 @@ ID: 62797166
 #include <queue>
 #include <string>
 
-template<class T>
+template <class T>
 struct Node
 {
 	T value;
 	Node<T>* left = nullptr;
 	Node<T>* right = nullptr;
-	explicit Node(const T& value) : value(value) {};
+	explicit Node(const T& value) : value(value) {}
 };
 
-template<class T>
+template <class T>
 class Tree
 {
 public:
-    Tree() {};
-    ~Tree() { CleanTree(root); };
+    Tree() {}
+    Tree(const Tree& other) = delete;
+    Tree(Tree&& other) = delete;
+    ~Tree()
+    {
+        if (root == nullptr)
+        {
+            return;
+        }
+        std::queue<Node<T>*> q;
+        q.push(root);
+        while (!q.empty())
+        {
+            root = q.front();
+            q.pop();
+            if (root->left != nullptr)
+            {
+                q.push(root->left);
+            }
+            if (root->right != nullptr)
+            {
+                q.push(root->right);
+            }
+            delete root;
+        }
+    }
+    Tree& operator=(Tree&& other) = delete;
+    Tree& operator=(const Tree& other) = delete;
     std::string BFS()
     {
         std::string answer = "";
@@ -52,7 +78,7 @@ public:
         }
         return answer;
     }
-    void AddElem(T elem)
+    void AddElem(const T& elem)
     {
         if (root == nullptr)
         {
@@ -89,30 +115,7 @@ public:
             }
         }
     }
-    void CleanTree(Node<T>* node)
-    {
-        if (node == nullptr)
-        {
-            return;
-        }
-        std::queue<Node<T>*> q;
-        q.push(node);
-        while (!q.empty())
-        {
-            node = q.front();
-            q.pop();
-            if (node->left != nullptr)
-            {
-                q.push(node->left);
-            }
-            if (node->right != nullptr)
-            {
-                q.push(node->right);
-            }
-            delete node;
-        }
-    }
-private:
+protected:
     Node<T>* root = nullptr;
 };
 
