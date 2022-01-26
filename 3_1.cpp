@@ -1,4 +1,4 @@
-﻿/*
+/*
 ID: 59077080	
 Условие:
 Даны неотрицательные целые числа n, k и массив целых чисел из диапазона [0..109] размера n.
@@ -21,43 +21,47 @@ ID: 59077080
 #include <iostream>
 
 template<class T>
-int Partition(T* arr, int left, int right) 
+void SelectPivot(T* arr, int left, int right)
 {
-    if (right - left <= 1)
+    if (arr[left] > arr[(left + right) / 2])
     {
-        return left;
-    }
-    if (arr[left] > arr[(left + right) / 2])  //Выбираем опорный элемент(медиана трех)
-    {
-        if (arr[left] < arr[right - 1]) 
+        if(arr[left] < arr[right - 1])
         {
             std::swap(arr[left], arr[right - 1]);
         }
-        else if (arr[(left + right) / 2] > arr[right - 1])
+        else if(arr[(left + right) / 2] > arr[right - 1])
         {
             std::swap(arr[(left + right) / 2], arr[right - 1]);
         }
     }
     else
     {
-        if (arr[left] > arr[right - 1]) 
-        { 
+        if (arr[left] > arr[right - 1])
+        {
             std::swap(arr[left], arr[right - 1]);
         }
-        else if (arr[(left + right) / 2] < arr[right - 1]) 
+        else if(arr[(left + right) / 2] < arr[right - 1])
         {
             std::swap(arr[(left + right) / 2], arr[right - 1]);
         }
     }
-    int pivot = arr[right - 1];
+}
+
+template<class T>
+int Partition(T* arr, int left, int right) 
+{
+    if (right - left <= 1)
+    {
+        return left;
+    }
+    SelectPivot(arr, left, right);
+    T pivot = arr[right - 1];
     int i = left, j = left;
     while (j < right - 1) 
     {
-        if (!(arr[j] > pivot)) 
+        if (arr[j] < pivot || arr[j] == pivot)
         { 
-            std::swap(arr[i], arr[j]);
-            j++;
-            i++;
+            std::swap(arr[i++], arr[j++]);
         }
         else
         {
@@ -69,21 +73,21 @@ int Partition(T* arr, int left, int right)
 }
 
 template<class T>
-int OrdinalStatistics(T* arr, int len, int k) 
+T OrdinalStatistics(T* arr, int len, int k) 
 {
     int part, left = 0, right = len;
     while (true) 
     {
         part = Partition(arr, left, right);
-        if (part == k) 
+        if(part == k) 
         {
             return arr[part];
         }
-        if (part > k)
+        else if(part > k)
         {
             right = part;
         }
-        if (part < k)
+        else
         {
             left = part + 1;
         }
@@ -102,7 +106,7 @@ int main()
     {
         std::cin >> arr[i];
     }
-    std::cout << OrdinalStatistics(arr, n, k) << '\n';
+    std::cout << OrdinalStatistics(arr, n, k) << "\n";
     delete[] arr;
     return 0;
 }
