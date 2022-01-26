@@ -1,18 +1,3 @@
-﻿/*
-ID: 62883537
-Условие:
-Дано число N < 10^6 и последовательность пар целых чисел из [-231, 231] длиной N. 
-Построить декартово дерево из N узлов, характеризующихся парами чисел (Xi, Yi). 
-Каждая пара чисел (Xi, Yi) определяет ключ Xi и приоритет Yi в декартовом дереве.
-Добавление узла в декартово дерево выполняйте второй версией алгоритма, рассказанного на лекции: При добавлении узла (x, y) выполняйте спуск по ключу до узла P с меньшим приоритетом.
-Затем разбейте найденное поддерево по ключу x так, чтобы в первом поддереве все ключи меньше x, а во втором больше или равны x. Получившиеся два дерева сделайте дочерними для нового узла (x, y). 
-Новый узел вставьте на место узла P. Построить также наивное дерево поиска по ключам Xi. Равные ключи добавляйте в правое поддерево.
-Вычислить количество узлов в самом широком слое декартового дерева и количество узлов в самом широком слое наивного дерева поиска. 
-Вывести их разницу. 
-Разница может быть отрицательна.
-Асимптотика: T(n) = O(n log n)
-Память: M(n) = O(n)
-*/
 #include <iostream>
 #include <queue>
 #include <vector>
@@ -23,7 +8,7 @@ struct Node
     T value;
     Node<T>* left = nullptr;
     Node<T>* right = nullptr;
-    explicit Node(const T& value) : value(value) {};
+    explicit Node(const T& value) : value(value) {}
 };
 
 template <class T>
@@ -33,22 +18,48 @@ struct TreapNode
     int priority;
     TreapNode<T>* left = nullptr;
     TreapNode<T>* right = nullptr;
-    explicit TreapNode(const T& value, const T& priority = rand()) : value(value), priority(priority) {};
+    explicit TreapNode(const T& value, const T& priority) : value(value), priority(priority) {}
 };
 
-template<class T>
+template <class S, class T>
 class Tree
 {
 public:
-    Tree() {};
-    ~Tree() { CleanTree(root); };
-    int CountTops(T* node)
+    Tree() {}
+    Tree(const Tree& other) = delete;
+    Tree(Tree&& other) = delete;
+    ~Tree()
+    {
+        if (root == nullptr)
+        {
+            return;
+        }
+        std::queue<S*> q;
+        q.push(root);
+        while (!q.empty())
+        {
+            root = q.front();
+            q.pop();
+            if (root->left != nullptr)
+            {
+                q.push(root->left);
+            }
+            if (root->right != nullptr)
+            {
+                q.push(root->right);
+            }
+            delete root;
+        }
+    }
+    Tree& operator=(const Tree& other) = delete;
+    Tree& operator=(Tree&& other) = delete;
+    int CountTops(S* node)
     {
         if (node == nullptr)
         {
             return 0;
         }
-        std::queue<T*> q;
+        std::queue<S*> q;
         q.push(node);
         int count = 1;
         while (!q.empty())
@@ -68,7 +79,7 @@ public:
         }
         return count;
     }
-    int TreeHeights(T* node)
+    int TreeHeights(S* node)
     {
         int height = 0;
         int left = 0;
@@ -81,7 +92,7 @@ public:
         }
         return height;
     }
-    void DFS(T* node, int nodeHeight, std::vector<int>& countHeights)
+    void DFS(S* node, int nodeHeight, std::vector<int>& countHeights)
     {
         if (node == nullptr)
         {
@@ -103,52 +114,30 @@ public:
         }
         return ans;
     }
-    void CleanTree(T* node)
-    {
-        if (node == nullptr)
-        {
-            return;
-        }
-        std::queue<T*> q;
-        q.push(node);
-        while (!q.empty())
-        {
-            node = q.front();
-            q.pop();
-            if (node->left != nullptr)
-            {
-                q.push(node->left);
-            }
-            if (node->right != nullptr)
-            {
-                q.push(node->right);
-            }
-            delete node;
-        }
-    }
-    T* root = nullptr;
+protected:
+    S* root = nullptr;
 };
 
-template<class T>
-class BinnaryTree : public Tree<T>
+template<class S, class T>
+class BinaryTree : public Tree<S, T>
 {
 public:
-    void AddElem(T* elem)
+    void AddElem(const T& elem)
     {
         if (this->root == nullptr)
         {
-            this->root = elem;
+            this->root = new S(elem);
             return;
         }
-        T* tree = this->root;
+        S* tree = this->root;
         bool isDone = false;
         while (!isDone)
         {
-            if (elem->value < tree->value)
+            if (elem < tree->value)
             {
                 if (tree->left == nullptr)
                 {
-                    tree->left = elem;
+                    tree->left = new S(elem);
                     isDone = true;
                 }
                 else
@@ -160,7 +149,7 @@ public:
             {
                 if (tree->right == nullptr)
                 {
-                    tree->right = elem;
+                    tree->right = new S(elem);
                     isDone = true;
                 }
                 else
@@ -172,30 +161,30 @@ public:
     }
 };
 
-template<class T>
-class TreapTree : public Tree<T>
+template<class S, class T>
+class TreapTree : public Tree<S, T>
 {
 public:
-    std::pair<T*, T*> Split(T* root, T* elem)
+    std::pair<S*, S*> Split(S* root, const T& value)
     {
         if (root == nullptr)
         {
             return std::make_pair(nullptr, nullptr);
         }
-        if (elem->value < root->value)
+        if (value < root->value)
         {
-            std::pair<T*, T*> leftSplit = Split(root->left, elem);
+            std::pair<S*, S*> leftSplit = Split(root->left, value);
             root->left = leftSplit.second;
             return std::make_pair(leftSplit.first, root);
         }
         else
         {
-            std::pair<T*, T*> rightSplit = Split(root->right, elem);
+            std::pair<S*, S*> rightSplit = Split(root->right, value);
             root->right = rightSplit.first;
             return std::make_pair(root, rightSplit.second);
         }
     }
-    T* Merge(T* left, T* right)
+    S* Merge(S* left, S* right)
     {
         if (left == nullptr || right == nullptr)
         {
@@ -212,10 +201,11 @@ public:
             return right;
         }
     }
-    void AddElem(T* elem)
+    void AddElem(const T& elem, const T& priority)
     {
-        std::pair<T*, T*> split = Split(this->root, elem);
-        this->root = Merge(Merge(split.first, elem), split.second);
+        S* node = new S(elem, priority);
+        std::pair<S*, S*> split = Split(this->root, elem);
+        this->root = Merge(Merge(split.first, node), split.second);
         return;
     }
 };
@@ -227,13 +217,13 @@ int main()
     std::cout.tie(0);
     int n, value, priority;
     std::cin >> n;
-    BinnaryTree<Node<int>> binTree;
-    TreapTree<TreapNode<int>> treapTree;
+    BinaryTree<Node<int>, int> binTree;
+    TreapTree<TreapNode<int>, int> treapTree;
     for (int i = 0; i < n; i++)
     {
         std::cin >> value >> priority;
-        binTree.AddElem(new Node<int>(value));
-        treapTree.AddElem(new TreapNode<int>(value, priority));
+        binTree.AddElem(value);
+        treapTree.AddElem(value, priority);
     }
     std::cout << treapTree.MaxWidth() - binTree.MaxWidth() << "\n";
     return 0;
