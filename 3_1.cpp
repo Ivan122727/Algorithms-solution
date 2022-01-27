@@ -59,7 +59,7 @@ int Partition(T* arr, int left, int right)
     int i = left, j = left;
     while (j < right - 1) 
     {
-        if (arr[j] < pivot || arr[j] == pivot)
+        if (!(pivot < arr[j]))
         { 
             std::swap(arr[i++], arr[j++]);
         }
