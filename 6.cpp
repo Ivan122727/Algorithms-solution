@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include "BigInteger.h"
 
 int main()
@@ -8,9 +8,14 @@ int main()
 	std::cout << a - b << "\n";
 	std::cout << a / b << "\n";
 	std::cout << a * b << "\n";
-	if (a)
+	if(a)
 	{
-		std::cout << "Not equal Zero";
+		std::cout << "Not equal Zero\n";
+	}
+	a = 0;
+	if (!a)
+	{
+		std::cout << "Equal Zero\n";
 	}
 	return 0;
 }
