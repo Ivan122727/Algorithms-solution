@@ -8,14 +8,14 @@ public:
 
     BigInteger();
     BigInteger(int a);
-    BigInteger(std::string s);
+    BigInteger(const std::string& s);
 
-    bool operator<(BigInteger const& b) const;
-    bool operator>(BigInteger const& b) const;
-    bool operator<=(BigInteger const& b) const;
-    bool operator>=(BigInteger const& b) const;
-    bool operator==(BigInteger const& b) const;
-    bool operator!=(BigInteger const& b) const;
+    bool operator<(const BigInteger& b) const;
+    bool operator>(const BigInteger& b) const;
+    bool operator<=(const BigInteger& b) const;
+    bool operator>=(const BigInteger& b) const;
+    bool operator==(const BigInteger& b) const;
+    bool operator!=(const BigInteger& b) const;
     BigInteger& operator*=(const BigInteger& b);
     BigInteger& operator+=(const BigInteger& c);
     BigInteger& operator%=(const BigInteger& b);
@@ -46,10 +46,7 @@ private:
     int Compare(const BigInteger& a, int k = 1) const;
 };
 
-BigInteger::BigInteger()
-{
-    positive = true;
-}
+BigInteger::BigInteger() : positive(true) {}
 
 BigInteger::BigInteger(int a)
 {
@@ -70,8 +67,7 @@ BigInteger::BigInteger(int a)
     }
 }
 
-
-BigInteger::BigInteger(std::string s)
+BigInteger::BigInteger(const std::string& s)
 {
     positive = true;
     for (size_t i = s.length() - 1; i > 0; i--)
@@ -216,34 +212,34 @@ std::ostream& operator<<(std::ostream& str, const BigInteger& a)
     return str;
 }
 
-bool BigInteger::operator<(BigInteger const& b) const
+bool BigInteger::operator<(const BigInteger& b) const
 {
     return Compare(b) == -1;
 }
 
-bool BigInteger::operator>(BigInteger const& b) const
+bool BigInteger::operator>(const BigInteger& b) const
 {
     return Compare(b) == 1;
 }
 
-bool BigInteger::operator<=(BigInteger const& b) const
+bool BigInteger::operator<=(const BigInteger& b) const
 {
     int comp = Compare(b);
     return comp == -1 || comp == 0;
 }
 
-bool BigInteger::operator>=(BigInteger const& b) const
+bool BigInteger::operator>=(const BigInteger& b) const
 {
     int comp = Compare(b);
     return comp == 1 || comp == 0;
 }
 
-bool BigInteger::operator==(BigInteger const& b) const
+bool BigInteger::operator==(const BigInteger& b) const
 {
     return Compare(b) == 0;
 }
 
-bool BigInteger::operator!=(BigInteger const& b) const
+bool BigInteger::operator!=(const BigInteger& b) const
 {
     return Compare(b) != 0;
 }
