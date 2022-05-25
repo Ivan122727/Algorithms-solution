@@ -12,6 +12,7 @@ ID: 66218757
 #include <iostream>
 #include <string>
 #include <vector>
+#include <assert.h>
 
 template<class THash, class T>
 struct HashTable
@@ -126,14 +127,17 @@ int main()
     std::string word;
     while (std::cin >> command >> word)
     {
+        assert(command == '+' || command == '-' || command == '?');
         if (command == '?')
         {
             std::cout << (array.Find(word) ? "OK" : "FAIL") << "\n";
         }
-        if (command == '+') {
+        else if (command == '+') 
+        {
             std::cout << (array.Add(word) ? "OK" : "FAIL") << "\n";
         }
-        if (command == '-') {
+        else
+        {
             std::cout << (array.Delete(word) ? "OK" : "FAIL") << "\n";
         }
     }
