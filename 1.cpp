@@ -1,4 +1,4 @@
-﻿/*
+/*
 Реализуйте структуру данных типа “множество строк” на основе динамической хеш-таблицы с открытой адресацией.
 Хранимые строки непустые и состоят из строчных латинских букв.
 Хеш-функция строки должна быть реализована с помощью вычисления значения многочлена методом Горнера.
@@ -13,12 +13,11 @@ ID: 66218757
 #include <string>
 #include <vector>
 
+template<class THash, class T>
 struct HashTable
 {
-    std::vector<std::string> list;
-    int size;
-    int buffer;
-    HashTable() : list(std::vector<std::string>(8)), size(8), buffer(0) {}
+public:
+    HashTable() : list(THash(8)), size(8), buffer(0) {}
     void Rehash()
     {
         size *= 2;
@@ -34,7 +33,7 @@ struct HashTable
         }
     }
     const float overflow = 0.75;
-    int Horner1(std::string data, int size)
+    int Horner1(T data, int size)
     {
         int index = 0;
         for (auto elem : data)
@@ -43,7 +42,8 @@ struct HashTable
         }
         return index;
     }
-    int Horner2(std::string value, int size)
+
+    int Horner2(T value, int size)
     {
         int index = 0;
         for (auto elem : value)
@@ -52,7 +52,7 @@ struct HashTable
         }
         return (index * 2 + 1) % size;
     }
-    bool Add(std::string data)
+    bool Add(const T& data)
     {
         if (buffer >= size * overflow)
         {
@@ -60,9 +60,12 @@ struct HashTable
         }
         int h1 = Horner1(data, size);
         int h2 = Horner2(data, size);
-        int i = 0;
-        while (i <= buffer && list[h1] != data)
+        for (int i = 0; i <= buffer; i++)
         {
+            if (list[h1] == data)
+            {
+                break;
+            }
             if (list[h1] == "")
             {
                 list[h1] = data;
@@ -70,17 +73,19 @@ struct HashTable
                 return true;
             }
             h1 = (h1 + h2) % size;
-            i++;
         }
         return false;
     }
-    bool Find(std::string data)
+    bool Find(const T& data)
     {
         int h1 = Horner1(data, size);
         int h2 = Horner2(data, size);
-        int i = 0;
-        while (i <= buffer && list[h1] != "")
+        for (int i = 0; i <= buffer; i++)
         {
+            if (list[h1] == "")
+            {
+                break;
+            }
             if (list[h1] == data)
             {
                 return true;
@@ -89,28 +94,34 @@ struct HashTable
         }
         return false;
     }
-    bool Delete(std::string data)
+    bool Delete(const T& data)
     {
         int h1 = Horner1(data, size);
         int h2 = Horner2(data, size);
-        int i = 0;
-        while (i <= buffer && list[h1] != "")
+        for (int i = 0; i <= buffer; i++)
         {
+            if (list[h1] == "")
+            {
+                break;
+            }
             if (list[h1] == data)
             {
                 list[h1] = "deleted";
                 return true;
             }
             h1 = (h1 + h2) % size;
-            i++;
         }
         return false;
     }
+private:
+    THash list;
+    int size;
+    int buffer;
 };
 
 int main()
 {
-    HashTable array;
+    HashTable<std::vector<std::string>, std::string> array;
     char command;
     std::string word;
     while (std::cin >> command >> word)
