@@ -18,15 +18,15 @@ public:
     bool operator!=(const BigInteger& b) const;
     BigInteger& operator*=(const BigInteger& b);
     BigInteger& operator+=(const BigInteger& c);
+    BigInteger& operator-=(const BigInteger& c);
     BigInteger& operator%=(const BigInteger& b);
     BigInteger& operator/=(const BigInteger& c);
     BigInteger& operator++();
-    const BigInteger operator++(int);
+    BigInteger operator++(int);
     BigInteger& operator--();
-    const BigInteger operator--(int);
+    BigInteger operator--(int);
     BigInteger abs() const;
-    const BigInteger operator-();
-    BigInteger& operator-=(const BigInteger& c);
+    BigInteger operator-();
     const std::string toString() const;
     explicit operator bool();
     friend std::istream& operator>>(std::istream&, BigInteger&);
@@ -275,71 +275,6 @@ BigInteger& BigInteger::operator+=(const BigInteger& c)
     return *this;
 }
 
-void BigInteger::LevelUp()
-{
-    num.insert(num.begin(), 0);
-}
-
-BigInteger& BigInteger::operator%=(const BigInteger& b)
-{
-    return *this = *this % b;
-}
-
-BigInteger& BigInteger::operator/=(const BigInteger& c)
-{
-    BigInteger rez = *this;
-    return *this = rez / c;
-}
-
-BigInteger& BigInteger::operator++()
-{
-    *this += 1;
-    return *this;
-}
-
-const BigInteger BigInteger::operator++(int)
-{
-    BigInteger tmp = *this;
-    ++(*this);
-    return tmp;
-}
-
-BigInteger& BigInteger::operator--()
-{
-    *this -= 1;
-    return *this;
-}
-
-const BigInteger BigInteger::operator--(int)
-{
-    BigInteger tmp = *this;
-    --(*this);
-    return tmp;
-}
-
-BigInteger BigInteger::abs() const
-{
-    BigInteger b = (*this);
-    b.positive = true;
-    return b;
-}
-
-const BigInteger BigInteger::operator-()
-{
-    BigInteger b = *this;
-    b.positive = !this->positive;
-    if (num.size() == 1 && num[0] == 0)
-    {
-        b.positive = true;
-        b.num[0] = 0;
-        return b;
-    }
-    else
-    {
-        return b;
-    }
-}
-
 BigInteger& BigInteger::operator-=(const BigInteger& c)
 {
     if ((positive && c.positive) || (!positive && !c.positive))
@@ -362,6 +297,71 @@ BigInteger& BigInteger::operator-=(const BigInteger& c)
     {
         Sum(*this, c);
         return *this;
+    }
+}
+
+void BigInteger::LevelUp()
+{
+    num.insert(num.begin(), 0);
+}
+
+BigInteger& BigInteger::operator%=(const BigInteger& b)
+{
+    return *this = *this % b;
+}
+
+BigInteger& BigInteger::operator/=(const BigInteger& c)
+{
+    BigInteger rez = *this;
+    return *this = rez / c;
+}
+
+BigInteger& BigInteger::operator++()
+{
+    *this += 1;
+    return *this;
+}
+
+BigInteger BigInteger::operator++(int)
+{
+    BigInteger tmp = *this;
+    ++(*this);
+    return tmp;
+}
+
+BigInteger& BigInteger::operator--()
+{
+    *this -= 1;
+    return *this;
+}
+
+BigInteger BigInteger::operator--(int)
+{
+    BigInteger tmp = *this;
+    --(*this);
+    return tmp;
+}
+
+BigInteger BigInteger::abs() const
+{
+    BigInteger b = (*this);
+    b.positive = true;
+    return b;
+}
+
+BigInteger BigInteger::operator-()
+{
+    BigInteger b = *this;
+    b.positive = !this->positive;
+    if (num.size() == 1 && num[0] == 0)
+    {
+        b.positive = true;
+        b.num[0] = 0;
+        return b;
+    }
+    else
+    {
+        return b;
     }
 }
 
