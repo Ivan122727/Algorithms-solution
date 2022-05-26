@@ -9,48 +9,39 @@ ID: 65816905
 #include <iostream>
 #include <vector>
 
-int main() 
+long long GetPyramidsCount(int n)
 {
-    int n;
-    std::cin >> n;
-    std::vector<std::vector<long long>> dp(n);
-    if (n == 1 || n == 2 || n == 0) 
+    if (n <= 2)
     {
-        if (n == 2) 
-        {
-            std::cout << 1;
-            return 0;
-        }
-        std::cout << n;
-        return 0;
+        return (n == 2) ? 1 : n;
     }
-    for (int i = 0; i < n; i++) 
+    std::vector<std::vector<long long>> dp(n);
+    for (int i = 0; i < n; i++)
     {
         dp[i].resize(n, 0);
-    }
-    for (int i = 0; i < n; i++) 
-    {
-        dp[i][0] = 0;
         dp[0][i] = 1;
     }
     for (int i = 1; i < n; i++)
     {
-        for (int j = 1; j < n; j++) 
+        for (int j = 1; j < n; j++)
         {
-            if (i == j)
+            if (i >= j)
             {
-                dp[i][j] = dp[i][j - 1] + 1; 
+                dp[i][j] = (i == j) ? dp[i][j - 1] + 1 : dp[i][j - 1] + dp[i - j - 1][j - 1];
             }
-            else if (i > j) 
-            {
-                dp[i][j] = dp[i][j - 1] + dp[i - j - 1][j - 1];
-            }
-            else 
+            else
             {
                 dp[i][j] = dp[i][j - 1];
             }
         }
     }
-    std::cout << dp[n - 1][n - 1];
+   return dp[n - 1][n - 1];
+}
+
+int main()
+{
+    int n;
+    std::cin >> n;
+    std::cout << GetPyramidsCount(n) << "\n";
     return 0;
 }
