@@ -25,17 +25,14 @@ long long GetPyramidsCount(int n)
     {
         for (int j = 1; j < n; j++)
         {
+            dp[i][j] = dp[i][j - 1];
             if (i >= j)
             {
-                dp[i][j] = (i == j) ? dp[i][j - 1] + 1 : dp[i][j - 1] + dp[i - j - 1][j - 1];
-            }
-            else
-            {
-                dp[i][j] = dp[i][j - 1];
+                dp[i][j] += (i == j) ?  1 : dp[i - j - 1][j - 1];
             }
         }
     }
-   return dp[n - 1][n - 1];
+    return dp[n - 1][n - 1];
 }
 
 int main()
