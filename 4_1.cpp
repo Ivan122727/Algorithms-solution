@@ -15,12 +15,8 @@ long long GetPyramidsCount(int n)
     {
         return (n == 2) ? 1 : n;
     }
-    std::vector<std::vector<long long>> dp(n);
-    for (int i = 0; i < n; i++)
-    {
-        dp[i].resize(n, 0);
-        dp[0][i] = 1;
-    }
+    std::vector<std::vector<long long>> dp(n, std::vector<long long>(n, 0));
+    dp[0] = std::vector<long long>(n, 1);
     for (int i = 1; i < n; i++)
     {
         for (int j = 1; j < n; j++)
@@ -28,7 +24,7 @@ long long GetPyramidsCount(int n)
             dp[i][j] = dp[i][j - 1];
             if (i >= j)
             {
-                dp[i][j] += (i == j) ?  1 : dp[i - j - 1][j - 1];
+                dp[i][j] += (i == j) ? 1 : dp[i - j - 1][j - 1];
             }
         }
     }
