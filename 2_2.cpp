@@ -1,40 +1,48 @@
 /*
-ID: 55601055
-Вычислить площадь выпуклого n-угольника, заданного координатами своих вершин. Вначале вводится количество вершин,
-затем последовательно целочисленные координаты всех вершин в порядке обхода по часовой стрелке. n < 1000, координаты < 10000.
-Асимптотика: O(n)
-Память: T(n)
+Условия:
+В большой IT-фирме есть только одна переговорная комната.
+Желающие посовещаться заполняют заявки с желаемым временем начала и конца.
+Ваша задача определить максимальное количество заявок, которое может быть удовлетворено.
+Число заявок ≤ 100000.
+Асимптотика: T(n) = O(n log n)
+Память: M(n) = O(n)
+ID: 65419918
 */
 #include <iostream>
+#include <algorithm>
 #include <vector>
 
-double GetSquareTriangles(std::pair<int, int>& a, std::pair<int, int>& b, std::pair<int, int>& c)
+bool cmp(const std::pair<int, int>& a, const std::pair<int, int>& b)
 {
-    return abs(((b.first - a.first) * (c.second - a.second) - (b.second - a.second) * (c.first - a.first))) * 0.5;
+	return a.second < b.second;
 }
 
-double Solve(std::vector<std::pair<int, int>>& points, int n)
+int GetMaxRequests(std::vector<std::pair<int, int>>& events)
 {
-    double answer = 0;
-    for (int i = 1; i < n - 1; i++)
-    {
-        answer += GetSquareTriangles(points[0], points[i], points[i + 1]);
-    }
-    return answer;
+	std::sort(events.begin(), events.end(), cmp);
+	int j = 0, ans = 1;
+	for (int i = 1; i < events.size(); i++)
+	{
+		if (events[i].first >= events[j].second)
+		{
+			ans++;
+			j = i;
+		}
+	}
+	return ans;
 }
 
 int main()
 {
-    std::ios::sync_with_stdio(0);
-    std::cin.tie(0);
-    std::cout.tie(0);
-    int n;
-    std::cin >> n;
-    std::vector<std::pair<int, int>> points(n);
-    for (int i = 0; i < n; i++)
-    {
-        std::cin >> points[i].first >> points[i].second;
-    }
-    std::cout << Solve(points, n) << "\n";
-    return 0;
+	std::ios::sync_with_stdio(0);
+	std::cin.tie(0);
+	std::cout.tie(0);
+	std::vector<std::pair<int, int>> events;
+	int start, finish;
+	while (std::cin >> start >> finish)
+	{
+		events.push_back({ start, finish });
+	}
+	std::cout << GetMaxRequests(events) << "\n";
+	return 0;
 }
