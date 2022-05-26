@@ -17,7 +17,7 @@ bool cmp(const std::pair<int, int>& a, const std::pair<int, int>& b)
 	return a.second < b.second;
 }
 
-int Solve(std::vector<std::pair<int, int>>& events)
+int GetMaxRequests(std::vector<std::pair<int, int>>& events)
 {
 	std::sort(events.begin(), events.end(), cmp);
 	int j = 0, ans = 1;
@@ -43,6 +43,6 @@ int main()
 	{
 		events.push_back({ start, finish });
 	}
-	std::cout << Solve(events) << "\n";
+	std::cout << GetMaxRequests(events) << "\n";
 	return 0;
 }
