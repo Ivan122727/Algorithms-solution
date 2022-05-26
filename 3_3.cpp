@@ -10,9 +10,10 @@ ID: 65420291
 #include <iostream>
 #include <vector>
 
-int Solve(std::vector<std::pair<int, int>>& dp, std::vector<int>& pos, int n)
+int GetMinLengthSum(std::vector<int>& pos, int n)
 {
     std::sort(pos.begin(), pos.end());
+    std::vector<std::pair<int, int>> dp(n + 1);
     dp[1].first = 1e9;
     dp[1].second = 0;
     for (int i = 2; i <= n; i++)
@@ -27,12 +28,11 @@ int main()
 {
     int n;
     std::cin >> n;
-    std::vector<std::pair<int, int>> dp(n + 1);
     std::vector<int> pos(n + 1);
     for (int i = 1; i <= n; i++)
     {
         std::cin >> pos[i];
     }
-    std::cout << Solve(dp, pos, n) << "\n";
+    std::cout << GetMinLengthSum(pos, n) << "\n";
     return 0;
 }
