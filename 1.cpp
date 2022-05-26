@@ -12,29 +12,13 @@ ID: 66218757
 #include <iostream>
 #include <string>
 #include <vector>
-#include <assert.h>
+#include <cassert>
 
-template<class THash, class T>
-struct HashTable
+template<class T>
+class THash
 {
 public:
-    HashTable() : list(THash(8)), size(8), buffer(0) {}
-    void Rehash()
-    {
-        size *= 2;
-        std::vector<std::string> temp(size);
-        buffer = 0;
-        std::swap(list, temp);
-        for (int i = 0; i < size / 2; ++i)
-        {
-            if (temp[i] != "" && temp[i] != "deleted")
-            {
-                Add(temp[i]);
-            }
-        }
-    }
-    const float overflow = 0.75;
-    int Horner1(T data, int size)
+    static int Horner1(const T& data, const int& size)
     {
         int index = 0;
         for (auto elem : data)
@@ -44,7 +28,7 @@ public:
         return index;
     }
 
-    int Horner2(T value, int size)
+    static int Horner2(const T& value, int& size)
     {
         int index = 0;
         for (auto elem : value)
@@ -53,15 +37,22 @@ public:
         }
         return (index * 2 + 1) % size;
     }
+};
+
+template<class T>
+struct HashTable : public THash<T>
+{
+public:
+    HashTable() : list(std::vector<T>(8)), capacity(8), size(0) {}
     bool Add(const T& data)
     {
-        if (buffer >= size * overflow)
+        if (size >= capacity * overflow)
         {
             Rehash();
         }
-        int h1 = Horner1(data, size);
-        int h2 = Horner2(data, size);
-        for (int i = 0; i <= buffer; i++)
+        int h1 = this->Horner1(data, capacity);
+        int h2 = this->Horner2(data, capacity);
+        for (int i = 0; i <= size; i++)
         {
             if (list[h1] == data)
             {
@@ -70,18 +61,18 @@ public:
             if (list[h1] == "")
             {
                 list[h1] = data;
-                buffer++;
+                size++;
                 return true;
             }
-            h1 = (h1 + h2) % size;
+            h1 = (h1 + h2) % capacity;
         }
         return false;
     }
     bool Find(const T& data)
     {
-        int h1 = Horner1(data, size);
-        int h2 = Horner2(data, size);
-        for (int i = 0; i <= buffer; i++)
+        int h1 = this->Horner1(data, capacity);
+        int h2 = this->Horner2(data, capacity);
+        for (int i = 0; i <= size; i++)
         {
             if (list[h1] == "")
             {
@@ -91,15 +82,15 @@ public:
             {
                 return true;
             }
-            h1 = (h1 + h2) % size;
+            h1 = (h1 + h2) % capacity;
         }
         return false;
     }
     bool Delete(const T& data)
     {
-        int h1 = Horner1(data, size);
-        int h2 = Horner2(data, size);
-        for (int i = 0; i <= buffer; i++)
+        int h1 = this->Horner1(data, capacity);
+        int h2 = this->Horner2(data, capacity);
+        for (int i = 0; i <= size; i++)
         {
             if (list[h1] == "")
             {
@@ -110,19 +101,34 @@ public:
                 list[h1] = "deleted";
                 return true;
             }
-            h1 = (h1 + h2) % size;
+            h1 = (h1 + h2) % capacity;
         }
         return false;
     }
 private:
-    THash list;
+    std::vector<T> list;
+    int capacity;
     int size;
-    int buffer;
+    const float overflow = 0.75;
+    void Rehash()
+    {
+        capacity *= 2;
+        std::vector<std::string> temp(capacity);
+        size = 0;
+        std::swap(list, temp);
+        for (int i = 0; i < capacity / 2; ++i)
+        {
+            if (temp[i] != "" && temp[i] != "deleted")
+            {
+                Add(temp[i]);
+            }
+        }
+    }
 };
 
 int main()
 {
-    HashTable<std::vector<std::string>, std::string> array;
+    HashTable<std::string> array;
     char command;
     std::string word;
     while (std::cin >> command >> word)
@@ -132,7 +138,7 @@ int main()
         {
             std::cout << (array.Find(word) ? "OK" : "FAIL") << "\n";
         }
-        else if (command == '+') 
+        else if (command == '+')
         {
             std::cout << (array.Add(word) ? "OK" : "FAIL") << "\n";
         }
