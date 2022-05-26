@@ -27,15 +27,15 @@ public:
     BigInteger operator--(int);
     BigInteger abs() const;
     BigInteger operator-();
-    const std::string toString() const;
+    std::string toString() const;
     explicit operator bool();
     friend std::istream& operator>>(std::istream&, BigInteger&);
     friend std::ostream& operator<<(std::ostream&, const BigInteger&);
-    friend const BigInteger operator*(const BigInteger& b, const BigInteger& a);
-    friend const BigInteger operator/(const BigInteger& a, const BigInteger& b);
-    friend const BigInteger operator%(const BigInteger& a, const BigInteger& b);
-    friend const BigInteger operator+(const BigInteger& a, const BigInteger& c);
-    friend const BigInteger operator-(const BigInteger& a, const BigInteger& c);
+    friend BigInteger operator*(const BigInteger& b, const BigInteger& a);
+    friend BigInteger operator/(const BigInteger& a, const BigInteger& b);
+    friend BigInteger operator%(const BigInteger& a, const BigInteger& b);
+    friend BigInteger operator+(const BigInteger& a, const BigInteger& c);
+    friend BigInteger operator-(const BigInteger& a, const BigInteger& c);
 private:
     std::vector<int> num;
     bool positive = true;
@@ -84,19 +84,19 @@ BigInteger::BigInteger(const std::string& s)
     }
 }
 
-const BigInteger operator-(const BigInteger& a, const BigInteger& c)
+BigInteger operator-(const BigInteger& a, const BigInteger& c)
 {
     BigInteger dif = a;
     return dif -= c;
 }
 
-const BigInteger operator+(const BigInteger& a, const BigInteger& c)
+BigInteger operator+(const BigInteger& a, const BigInteger& c)
 {
     BigInteger sum = a;
     return sum += c;
 }
 
-const BigInteger operator*(const BigInteger& b, const BigInteger& a)
+BigInteger operator*(const BigInteger& b, const BigInteger& a)
 {
     size_t length = a.num.size() + b.num.size() + 1;
     BigInteger c;
@@ -121,7 +121,7 @@ const BigInteger operator*(const BigInteger& b, const BigInteger& a)
     return c;
 }
 
-const BigInteger operator/(const BigInteger& a, const BigInteger& b)
+BigInteger operator/(const BigInteger& a, const BigInteger& b)
 {
     BigInteger res;
     res.num.resize(a.num.size());
@@ -156,7 +156,7 @@ const BigInteger operator/(const BigInteger& a, const BigInteger& b)
     return res;
 }
 
-const BigInteger operator%(const BigInteger& a, const BigInteger& b)
+BigInteger operator%(const BigInteger& a, const BigInteger& b)
 {
     BigInteger res;
     res.num.resize(a.num.size());
@@ -365,7 +365,7 @@ BigInteger BigInteger::operator-()
     }
 }
 
-const std::string BigInteger::toString() const
+std::string BigInteger::toString() const
 {
     std::string s = positive ? "" : "-";
     if (num[0] == 0 && num.size() == 1)
