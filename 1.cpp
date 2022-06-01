@@ -15,10 +15,10 @@ ID: 66218757
 #include <cassert>
 
 template<class T>
-class THash
+class HornerHash
 {
 public:
-    static int Horner1(const T& data, const int& size)
+    static int Hash1(const T& data, const int& size)
     {
         int index = 0;
         for (auto elem : data)
@@ -28,7 +28,7 @@ public:
         return index;
     }
 
-    static int Horner2(const T& value, int& size)
+    static int Hash2(const T& value, int& size)
     {
         int index = 0;
         for (auto elem : value)
@@ -39,8 +39,8 @@ public:
     }
 };
 
-template<class T>
-struct HashTable : public THash<T>
+template <class T, class THash = HornerHash<T>>
+struct HashTable : public HornerHash<T>
 {
 public:
     HashTable() : list(std::vector<T>(8)), capacity(8), size(0) {}
@@ -50,8 +50,8 @@ public:
         {
             Rehash();
         }
-        int h1 = this->Horner1(data, capacity);
-        int h2 = this->Horner2(data, capacity);
+        int h1 = THash::Hash1(data, capacity);
+        int h2 = THash::Hash2(data, capacity);
         for (int i = 0; i <= size; i++)
         {
             if (list[h1] == data)
@@ -70,8 +70,8 @@ public:
     }
     bool Find(const T& data)
     {
-        int h1 = this->Horner1(data, capacity);
-        int h2 = this->Horner2(data, capacity);
+        int h1 = THash::Hash1(data, capacity);
+        int h2 = THash::Hash2(data, capacity);
         for (int i = 0; i <= size; i++)
         {
             if (list[h1] == "")
@@ -88,8 +88,8 @@ public:
     }
     bool Delete(const T& data)
     {
-        int h1 = this->Horner1(data, capacity);
-        int h2 = this->Horner2(data, capacity);
+        int h1 = THash::Hash1(data, capacity);
+        int h2 = THash::Hash2(data, capacity);
         for (int i = 0; i <= size; i++)
         {
             if (list[h1] == "")
