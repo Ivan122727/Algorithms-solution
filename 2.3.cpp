@@ -7,6 +7,7 @@ ID: 67964077
 */
 #include <iostream>
 #include <vector>
+#include <stack>
 
 class ListGraph
 {
@@ -43,7 +44,7 @@ void ListGraph::FindAllAdjacentIn(int vertex, std::vector<int>& vertices) const
     }
 }
 
-void ListGraph::FindAllAdjacentOut(int vertex, std::vector<int>& vertices) const 
+void ListGraph::FindAllAdjacentOut(int vertex, std::vector<int>& vertices) const
 {
     for (int i : g[vertex])
     {
@@ -51,37 +52,32 @@ void ListGraph::FindAllAdjacentOut(int vertex, std::vector<int>& vertices) const
     }
 }
 
-void DFS(int v, int curColor, ListGraph& g, std::vector<int>& color, bool& bipartiteGraph)
+bool IsBipartiteGraph(int v, int curColor, ListGraph& g, std::vector<int>& color)
 {
-    if (!bipartiteGraph)
+    std::stack<std::pair<int, int>> stk;
+    stk.push({ v, curColor });
+    std::pair<int, int> top;
+    while (!stk.empty())
     {
-        return;
-    }
-    color[v] = curColor;
-    std::vector<int> vertices;
-    g.FindAllAdjacentIn(v, vertices);
-    for (auto& x : vertices)
-    {
-        if (!color[x])
+        top = stk.top();
+        stk.pop();
+        color[top.first] = top.second;
+        std::vector<int> vertices;
+        g.FindAllAdjacentIn(top.first, vertices);
+        for (auto& x : vertices)
         {
-            if (curColor == 1)
+            if (!color[x])
             {
-                DFS(x, 2, g, color, bipartiteGraph);
+                curColor = (top.second == 1) ? 2 : 1;
+                stk.push({ x, curColor });
             }
-            else if (curColor == 2)
+            else if (color[top.first] == color[x])
             {
-                DFS(x, 1, g, color, bipartiteGraph);
-            }
-        }
-        else
-        {
-            if (color[v] == color[x])
-            {
-                bipartiteGraph = false;
-                return;
+                    return false;
             }
         }
     }
+    return true;
 }
 
 int main()
@@ -97,15 +93,6 @@ int main()
         g.AddEdge(a, b);
         g.AddEdge(b, a);
     }
-    bool bipartiteGraph = true;
-    DFS(0, 1, g, color, bipartiteGraph);
-    if (bipartiteGraph)
-    {
-        std::cout << "YES\n";
-    }
-    else
-    {
-        std::cout << "NO\n";
-    }
+    std::cout << ((IsBipartiteGraph(0, 1, g, color)) ? "YES\n" : "NO\n");
     return 0;
 }
