@@ -1,4 +1,4 @@
-﻿/*
+/*
 Найти в связном графе остовное дерево минимального веса.
 Асимптотика: T(n) = O(n)
 Память: M(n) = O(n)
@@ -8,21 +8,63 @@ ID:	68007987
 #include <set>
 #include <vector>
 
-int main()
+class ListGraph
 {
-	const int N = 100000;
-	int n, m;
-	std::cin >> n >> m;
-	std::vector<std::pair<int, int>> g[N];
-	for (int i = 0; i < m; i++)
+public:
+	ListGraph(int size);
+	virtual void AddEdge(int from, int to, int weight);
+	virtual int VerticesCount() const;
+	virtual void FindAllAdjacentIn(int vertex, std::vector<std::pair<int, int>>& vertices) const;
+	virtual void FindAllAdjacentOut(int vertex, std::vector<std::pair<int, int>>& vertices) const;
+	virtual void ChangeLen(int from, int to, int len);
+private:
+	int size;
+	std::vector<std::vector<std::pair<int, int>>> g;
+	std::vector<std::vector<std::pair<int, int>>> reversedG;
+};
+
+ListGraph::ListGraph(int size) : size(size), g(std::vector<std::vector<std::pair<int, int>>>(size, std::vector<std::pair<int, int>>())), reversedG(std::vector<std::vector<std::pair<int, int>>>(size, std::vector<std::pair<int, int>>())) {}
+
+void ListGraph::AddEdge(int from, int to, int weight)
+{
+	g[from].push_back({ to, weight });
+	reversedG[to].push_back({ from, weight });
+}
+
+int ListGraph::VerticesCount() const
+{
+	return size;
+}
+
+void ListGraph::FindAllAdjacentIn(int vertex, std::vector<std::pair<int, int>>& vertices) const
+{
+	for (auto x : reversedG[vertex])
 	{
-		int a, b, c;
-		std::cin >> a >> b >> c;
-		a--;
-		b--;
-		g[a].push_back({ b, c });
-		g[b].push_back({ a, c });
+		vertices.push_back(x);
 	}
+}
+
+void ListGraph::FindAllAdjacentOut(int vertex, std::vector<std::pair<int, int>>& vertices) const
+{
+	for (auto x : g[vertex])
+	{
+		vertices.push_back(x);
+	}
+}
+
+void ListGraph::ChangeLen(int from, int to, int len)
+{
+	for (int i = 0; i < g[from].size(); i++)
+	{
+		if (g[from][i].first == to)
+		{
+			g[from][i].second = len;
+		}
+	}
+}
+
+int GetMinWay(ListGraph& g, int n)
+{
 	std::vector<int> dist(n), was(n);
 	for (int i = 0; i < n; i++)
 	{
@@ -39,7 +81,9 @@ int main()
 		costMst += distanse;
 		s.erase(s.begin());
 		was[v] = 1;
-		for (auto [u, cost] : g[v])
+		std::vector<std::pair<int, int>> vertices;
+		g.FindAllAdjacentIn(v, vertices);
+		for (auto [u, cost] : vertices)
 		{
 			if (dist[u] > cost && was[u] == 0)
 			{
@@ -49,5 +93,24 @@ int main()
 			}
 		}
 	}
-	std::cout << costMst << "\n";
+	return costMst;
+}
+
+int main()
+{
+	const int N = 100000;
+	int n, m;
+	std::cin >> n >> m;
+	ListGraph g(N);
+	int a, b, c;
+	for (int i = 0; i < m; i++)
+	{
+		std::cin >> a >> b >> c;
+		a--;
+		b--;
+		g.AddEdge(a, b, c);
+		g.AddEdge(b, a, c);
+	}
+	std::cout << GetMinWay(g, n) << "\n";
+	return 0;
 }
