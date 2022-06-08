@@ -1,141 +1,143 @@
-﻿/*
-Дан ориентированный граф.
-Определите, какое минимальное число ребер необходимо добавить, чтобы граф стал сильносвязным.
-В графе возможны петли
-Асимптотика: T(n) = O(n)
+/*
+Требуется отыскать самый короткий маршрут между городами.
+Из города может выходить дорога, которая возвращается в этот же город.
+Требуемое время работы O((N + M)log N),
+Асимптотика: T(N, M) = O((N + M)log N)
 Память: M(n) = O(n)
-ID: 67964254
+ID: 67974928
 */
 #include <algorithm>
 #include <iostream>
+#include <set>
 #include <vector>
 
-void DFS1(int v, std::vector<bool>& used, std::vector<int>& order, std::vector<std::vector<int>>& g1)
+class ListGraph
 {
-    used[v] = true;
-    for (int i = 0; i < g1[v].size(); i++)
-    {
-        if (!used[g1[v][i]])
-        {
-            DFS1(g1[v][i], used, order, g1);
-        }
-    }
-    order.push_back(v);
+public:
+    ListGraph(int size);
+    virtual void AddEdge(int from, int to, int weight);
+    virtual int VerticesCount() const;
+    virtual void FindAllAdjacentIn(int vertex, std::vector<std::pair<int, int>>& vertices) const;
+    virtual void FindAllAdjacentOut(int vertex, std::vector<std::pair<int, int>>& vertices) const;
+    virtual void ChangeLen(int from, int to, int len);
+private:
+    int size;
+    std::vector<std::vector<std::pair<int, int>>> g;
+    std::vector<std::vector<std::pair<int, int>>> reversedG;
+};
+
+ListGraph::ListGraph(int size) : size(size), g(std::vector<std::vector<std::pair<int, int>>>(size, std::vector<std::pair<int, int>>())), reversedG(std::vector<std::vector<std::pair<int, int>>>(size, std::vector<std::pair<int, int>>())) {}
+
+void ListGraph::AddEdge(int from, int to, int weight)
+{
+    g[from].push_back({ to, weight });
+    reversedG[to].push_back({ from, weight });
 }
 
-void DFS2(int v, std::vector<bool>& used, std::vector<int>& component, std::vector<std::vector<int>>& g2)
+int ListGraph::VerticesCount() const
 {
-    used[v] = true;
-    component.push_back(v);
-    for (int i = 0; i < g2[v].size(); i++)
+    return size;
+}
+
+void ListGraph::FindAllAdjacentIn(int vertex, std::vector<std::pair<int, int>>& vertices) const
+{
+    for (auto x : reversedG[vertex])
     {
-        if (!used[g2[v][i]])
+        vertices.push_back(x);
+    }
+}
+
+void ListGraph::FindAllAdjacentOut(int vertex, std::vector<std::pair<int, int>>& vertices) const
+{
+    for (auto x : g[vertex])
+    {
+        vertices.push_back(x);
+    }
+}
+
+void ListGraph::ChangeLen(int from, int to, int len)
+{
+    for (int i = 0; i < g[from].size(); i++)
+    {
+        if (g[from][i].first == to)
         {
-            DFS2(g2[v][i], used, component, g2);
+            g[from][i].second = len;
         }
     }
+}
+
+int GetMinWay(int from,  int to, int n, ListGraph& g)
+{
+    std::vector<int> distance(n, 1000000);
+    distance[from] = 0;
+    std::set<std::pair<int, int>> s;
+    s.insert({ distance[from], from });
+    while (!s.empty())
+    {
+        int v = s.begin()->second;
+        s.erase(s.begin());
+        std::vector<std::pair<int, int>> vertices;
+        g.FindAllAdjacentIn(v, vertices);
+        for (auto& x : vertices)
+        {
+            if (distance[v] + x.second < distance[x.first])
+            {
+                s.erase({ distance[x.first], x.first });
+                distance[x.first] = distance[v] + x.second;
+                s.insert({ distance[x.first], x.first });
+            }
+        }
+    }
+    return distance[to];
 }
 
 int main()
 {
-    std::vector<int> order;
-    std::vector<int> component;
-    std::vector<std::pair<int, int>> isST;
     int n, m;
     std::cin >> n >> m;
-    if (n == 1)
-    {
-        std::cout << 0;
-        return 0;
-    }
-    std::vector<std::vector<int>> g1(n), g2(n);
+    ListGraph g(n);
     for (int i = 0; i < m; i++)
     {
-        int a, b;
-        std::cin >> a >> b;
-        if (a == b)
-        {
-            continue;
-        }
-        a--;
-        b--;
+        int a, b, c;
+        std::cin >> a >> b >> c;
+        if (a == b) continue;
         bool isSecondRoad = false;
-        for (int j = 0; j < g1[a].size(); j++)
+        std::vector<std::pair<int, int>> vertices;
+        g.FindAllAdjacentIn(a, vertices);
+        for (auto& x : vertices)
         {
-            if (g1[a][j] == b)
+            if (x.first == b)
             {
                 isSecondRoad = true;
+                if (x.second > c)
+                {
+                    std::cout << x.second << "\n";
+                    g.ChangeLen(a, x.first, c);
+                }
+                break;
+            }
+        }
+        vertices.clear();
+        g.FindAllAdjacentIn(b, vertices);
+        for (auto& x : vertices)
+        {
+            if (x.first == a)
+            {
+                if (x.second > c)
+                {
+                    g.ChangeLen(b, x.first, c);
+                }
                 break;
             }
         }
         if (!isSecondRoad)
         {
-            g1[a].push_back(b);
-            g2[b].push_back(a);
+            g.AddEdge(a, b, c);
+            g.AddEdge(b, a, c);
         }
     }
-    std::vector<bool> used(n, false);
-    for (int i = 0; i < n; i++)
-    {
-        if (!used[i])
-        {
-            DFS1(i, used, order, g1);
-        }
-    }
-    used.assign(n, false);
-    std::vector<int> dsu(n);
-    int cursor = 0;
-    for (int i = 0; i < n; i++)
-    {
-        int v = order[n - 1 - i];
-        if (!used[v])
-        {
-            DFS2(v, used, component, g2);
-            if (component.size() == n)
-            {
-                std::cout << 0;
-                return 0;
-            }
-            for (auto x : component)
-            {
-                dsu[x] = cursor;
-            }
-            component.clear();
-            cursor++;
-        }
-    }
-    isST.resize(cursor, { 0, 0 });
-    used.assign(n, false);
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < g1[i].size(); j++)
-        {
-            if (dsu[i] != dsu[g1[i][j]])
-            {
-                isST[dsu[i]].first++;
-                isST[dsu[g1[i][j]]].second++;
-            }
-        }
-    }
-    int s = 0, t = 0, q = 0;
-    for (int i = 0; i < cursor; i++)
-    {
-        if (!isST[i].first && !isST[i].second)
-        {
-            q++;
-        }
-        else if ((isST[i].first || isST[i].second) && isST[i].first - isST[i].second != 0)
-        {
-            if (isST[i].first)
-            {
-                s++;
-            }
-            if (isST[i].second)
-            {
-                t++;
-            }
-        }
-    }
-    std::cout << std::max(s + q, t + q) << "\n";
+    int from, to;
+    std::cin >> from >> to;
+    std::cout << GetMinWay(from, to, n, g) << "\n";
     return 0;
 }
