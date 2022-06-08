@@ -1,151 +1,61 @@
-/*
-Реализуйте структуру данных типа “множество строк” на основе динамической хеш-таблицы с открытой адресацией.
-Хранимые строки непустые и состоят из строчных латинских букв.
-Хеш-функция строки должна быть реализована с помощью вычисления значения многочлена методом Горнера.
-Начальный размер таблицы должен быть равным 8-ми. Перехеширование выполняйте при добавлении элементов в случае, когда коэффициент заполнения таблицы достигает 3/4.
-Структура данных должна поддерживать операции добавления строки в множество, удаления строки из множества и проверки принадлежности данной строки множеству.
-Вариант 2. Для разрешения коллизий используйте двойное хеширование.
-Асимптотика: T(n) = O(n)
+﻿/*
+Найдите все вхождения шаблона в строку. Длина шаблона – p, длина строки – n. С помощью z-функции. 
+Время O(n + p), доп. память – O(p).
+p ≤ 30000, n ≤ 300000.
+Время: T(n, p) = O(n + p)
 Память: M(n) = O(n)
-ID: 66218757
+ID: 68779043
 */
 #include <iostream>
-#include <string>
 #include <vector>
-#include <cassert>
+#include <string>
 
-template<class T>
-class HornerHash
+std::vector<int> GetZ(const std::string & s, int n)
 {
-public:
-    static int Hash1(const T& data, const int& size)
+    std::vector<int> z(n);
+    for (int i = 1, l = 0, r = 0; i < n; i++) 
     {
-        int index = 0;
-        for (auto elem : data)
+        if (i <= r)
         {
-            index = (index * (size - 1) + elem) % size;
+            z[i] = std::min(r - i + 1, z[i - l]);
         }
-        return index;
-    }
-
-    static int Hash2(const T& value, int& size)
-    {
-        int index = 0;
-        for (auto elem : value)
+        while(i + z[i] < n && s[z[i]] == s[i + z[i]])
         {
-            index = (index * (size + 1) + elem) % size;
+            z[i]++;
         }
-        return (index * 2 + 1) % size;
+        if (i + z[i] - 1 > r)
+        {
+            l = i;
+            r = i + z[i] - 1;
+        }
     }
-};
+    return z;
+}
 
-template <class T, class THash = HornerHash<T>>
-struct HashTable : public HornerHash<T>
+std::vector<int> GetOccurrences(const std::string& s, const std::string& sample)
 {
-public:
-    HashTable() : list(std::vector<T>(8)), capacity(8), size(0) {}
-    bool Add(const T& data)
+    std::vector<int> occurrences;
+    std::string c = sample + "#" + s;
+    std::vector<int> z = GetZ(c, c.length());
+    for (int i = sample.length() + 1; i < c.length(); i++)
     {
-        if (size >= capacity * overflow)
+        if (z[i] == sample.length())
         {
-            Rehash();
-        }
-        int h1 = THash::Hash1(data, capacity);
-        int h2 = THash::Hash2(data, capacity);
-        for (int i = 0; i <= size; i++)
-        {
-            if (list[h1] == data)
-            {
-                break;
-            }
-            if (list[h1] == "")
-            {
-                list[h1] = data;
-                size++;
-                return true;
-            }
-            h1 = (h1 + h2) % capacity;
-        }
-        return false;
-    }
-    bool Find(const T& data)
-    {
-        int h1 = THash::Hash1(data, capacity);
-        int h2 = THash::Hash2(data, capacity);
-        for (int i = 0; i <= size; i++)
-        {
-            if (list[h1] == "")
-            {
-                break;
-            }
-            if (list[h1] == data)
-            {
-                return true;
-            }
-            h1 = (h1 + h2) % capacity;
-        }
-        return false;
-    }
-    bool Delete(const T& data)
-    {
-        int h1 = THash::Hash1(data, capacity);
-        int h2 = THash::Hash2(data, capacity);
-        for (int i = 0; i <= size; i++)
-        {
-            if (list[h1] == "")
-            {
-                break;
-            }
-            if (list[h1] == data)
-            {
-                list[h1] = "deleted";
-                return true;
-            }
-            h1 = (h1 + h2) % capacity;
-        }
-        return false;
-    }
-private:
-    std::vector<T> list;
-    int capacity;
-    int size;
-    const float overflow = 0.75;
-    void Rehash()
-    {
-        capacity *= 2;
-        std::vector<std::string> temp(capacity);
-        size = 0;
-        std::swap(list, temp);
-        for (int i = 0; i < capacity / 2; ++i)
-        {
-            if (temp[i] != "" && temp[i] != "deleted")
-            {
-                Add(temp[i]);
-            }
+            occurrences.push_back(i - sample.length() - 1);
         }
     }
-};
+    return occurrences;
+}
 
 int main()
 {
-    HashTable<std::string> array;
-    char command;
-    std::string word;
-    while (std::cin >> command >> word)
+    std::string sample, s;
+    std::cin >> sample >> s;
+    std::vector<int> occurrences = GetOccurrences(s, sample);
+    for (auto& occurrence : occurrences)
     {
-        assert(command == '+' || command == '-' || command == '?');
-        if (command == '?')
-        {
-            std::cout << (array.Find(word) ? "OK" : "FAIL") << "\n";
-        }
-        else if (command == '+')
-        {
-            std::cout << (array.Add(word) ? "OK" : "FAIL") << "\n";
-        }
-        else
-        {
-            std::cout << (array.Delete(word) ? "OK" : "FAIL") << "\n";
-        }
+        std::cout << occurrence << " ";
     }
+    std::cout << "\n";
     return 0;
 }
