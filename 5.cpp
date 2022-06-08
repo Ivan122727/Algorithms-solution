@@ -1,160 +1,126 @@
-/*
-Необходимо написать торгового советника для поиска арбитража.
-Арбитраж - это торговля по цепочке различных валют в надежде заработать на небольших различиях в коэффициентах. Например, есть следующие курсы валют:
-GBP/USD: 0.67
-RUB/GBP: 78.66
-USD/RUB: 0.02
-Имея 1$ и совершив цикл USD->GBP->RUB->USD, получим 1.054$. Таким образом заработав
-Асимптотика: T(n) = O(n)
+﻿/*
+Дана строка длины n. Найти количество ее различных подстрок. Используйте суффиксный массив.
+Построение суффиксного массива выполняйте за O(n log n). Вычисление количества различных подстрок выполняйте за O(n).
+Время: T(n) = O(n log n)
 Память: M(n) = O(n)
-ID: 67975008
+ID: 68797284
 */
-#include <algorithm>
+
 #include <iostream>
 #include <vector>
-#include <stack>
+#include <algorithm>
 
-class ListGraph
+const int N = 20000; 
+std::vector<int> order(N);
+int n, nowSuffAdd;
+
+int GetOrder(const int& pos) 
 {
-public:
-    ListGraph(int size);
-    virtual void AddEdge(int from, int to, double weight);
-    virtual int VerticesCount() const;
-    virtual void FindAllAdjacentIn(int vertex, std::vector<std::pair<int, double>>& vertices) const;
-    virtual void FindAllAdjacentOut(int vertex, std::vector<std::pair<int, double>>& vertices) const;
-    virtual double GetCost(int from, int to) const;
-private:
-    int size;
-    std::vector<std::vector<std::pair<int, double>>> g;
-    std::vector<std::vector<std::pair<int, double>>> reversedG;
-};
-
-ListGraph::ListGraph(int size) : size(size), g(std::vector<std::vector<std::pair<int, double>>>(size, std::vector<std::pair<int, double>>())), reversedG(std::vector<std::vector<std::pair<int, double>>>(size, std::vector<std::pair<int, double>>())) {}
-
-void ListGraph::AddEdge(int from, int to, double weight)
-{
-    g[from].push_back({ to, weight });
-    reversedG[to].push_back({ from, weight });
+    return (pos < n) ? order[pos] : -1;
 }
 
-int ListGraph::VerticesCount() const
+bool cmp(std::pair<int, int>& a, std::pair<int, int>& b)
 {
-    return size;
+    return (a.first != b.first) ? a.first < b.first : GetOrder(a.second + nowSuffAdd) < GetOrder(b.second + nowSuffAdd);
 }
 
-void ListGraph::FindAllAdjacentIn(int vertex, std::vector<std::pair<int, double>>& vertices) const
+std::vector<int> BuildSufArr(const std::string& s)
 {
-    for (auto x : reversedG[vertex])
+    n = (int)s.length();
+    int cnt[26];
+    for (int i = 0; i < 26; i++) 
     {
-        vertices.push_back(x);
+        cnt[i] = 0;
     }
-}
-
-double ListGraph::GetCost(int from, int to) const
-{
-    for (int i = 0; i < g[from].size(); i++)
-    {
-        if (g[from][i].first == to)
-        {
-            return g[from][i].second;
-        }
-    }
-}
-
-void ListGraph::FindAllAdjacentOut(int vertex, std::vector<std::pair<int, double>>& vertices) const
-{
-    for (auto i : g[vertex])
-    {
-        vertices.push_back(i);
-    }
-}
-
-void DFS(int v, double w, std::vector<int> u, bool& flag, int& n, ListGraph& g)
-{
-    std::stack<std::pair<std::pair<int, double>, std::vector<int>>> stk;
-    stk.push({ { v, w }, u });
-    std::pair<std::pair<int, double>, std::vector<int>> top;
-    while (!stk.empty())
-    {
-        top = stk.top();
-        stk.pop();
-        if (u[top.first.first] == 2)
-        {
-            if (top.first.second > 1)
-            {
-                flag = true;
-                return;
-            }
-        }
-        for (int i = 0; i < n; i++)
-        {
-            if (top.first.first == i || g.GetCost(top.first.first, i) == -1)
-            {
-                continue;
-            }
-            if (u[i] != 1)
-            {
-                std::vector<int> u2(n);
-                u2.assign(u.begin(), u.end());
-                if (u2[i] != 2)
-                {
-                    u2[i] = 1;
-                }
-                stk.push({ {i, top.first.first * g.GetCost(top.first.first, i) }, u2 });
-            }
-        }
-    }
-    
-}
-
-void MainDFS(int x, int& n, bool& flag, ListGraph& g)
-{
-    std::vector<int> u(n, 0);
-    u[x] = 2;
     for (int i = 0; i < n; i++)
     {
-        if (x == i)
+        cnt[s[i] - 'a']++;
+    }
+    for (int i = 1; i < 26; i++)
+    {
+        cnt[i] += cnt[i - 1];
+    }
+    std::vector<std::pair<int, int>> suf;
+    for (int i = 0; i < n; i++) 
+    {
+        order[i] = cnt[s[i] - 'a'] - 1;
+        suf.push_back({ order[i], i });
+    }
+    sort(suf.begin(), suf.end(), cmp);
+    nowSuffAdd = 1;
+    while (nowSuffAdd <= n)
+    {
+        sort(suf.begin(), suf.end(), cmp);
+        for(int i = (int)suf.size() - 2; i >= 0; i--)
         {
+            if (order[suf[i].second + nowSuffAdd] < order[suf[i + 1].second + nowSuffAdd])
+            {
+                suf[i].first = i;
+            }
+            else 
+            {
+                suf[i].first = std::min(suf[i + 1].first, suf[i].first);
+            }
+        }
+        for (auto& num : suf) 
+        {
+            order[num.second] = num.first;
+        }
+        nowSuffAdd += nowSuffAdd;
+    }
+    std::vector<int> answer;
+    for (auto& num  : suf) 
+    {
+        answer.push_back(num.second);
+    }
+    nowSuffAdd = 0;
+    return answer;
+}
+
+std::vector<int> BuildLCP(const std::string& s, const std::vector<int>& sa) 
+{
+    int n = (int)s.size(), k = 0;
+    std::vector<int> lcp(n, 0);
+    std::vector<int> rank(n, 0);
+    for (int i = 0; i < n; i++) 
+    {
+        rank[sa[i]] = i;
+    }
+    for(int i = 0; i < n; i++, k ? k-- : 0) 
+    {
+        if (rank[i] == n - 1) 
+        {
+            k = 0;
             continue;
         }
-        std::vector<int> u2(n);
-        u2.assign(u.begin(), u.end());
-        if (u2[i] != 2)
+        int j = sa[rank[i] + 1];
+        while (i + k < n && j + k < n && s[i + k] == s[j + k])
         {
-            u2[i] = 1;
+            k++;
         }
-        DFS(i, g.GetCost(x, i), u2, flag, n, g);
-        break;
+        lcp[rank[i]] = k;
     }
+    lcp.pop_back();
+    return lcp;
+}
+
+int GetCount(const std::string& s)
+{
+    std::vector<int> suf_ar = BuildSufArr(s);
+    std::vector<int> lcp = BuildLCP(s, suf_ar);
+    int n = (int)s.length();
+    int c = 0;
+    for (auto& x : lcp)
+    {
+        c += x;
+    }
+    return n * (n + 1) / 2 - c;
 }
 
 int main()
 {
-    int n;
-    std::cin >> n;
-    ListGraph g(n);
-    double cost;
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-        {
-            if (i == j)
-            {
-                g.AddEdge(i, j, 0);
-                continue;
-            }
-            std::cin >> cost;
-            g.AddEdge(i, j, cost);
-        }
-    }
-    bool hasProfite = false;
-    for (int i = 0; i < n; i++)
-    {
-        if (!hasProfite)
-        {
-            MainDFS(i, n, hasProfite, g);
-        }
-    }
-    std::cout << ((hasProfite) ? "YES\n" : "NO\n");
+    std::string s;
+    std::cin >> s;
+    std::cout << GetCount(s) << "\n";
     return 0;
 }
