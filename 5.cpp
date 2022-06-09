@@ -5,30 +5,61 @@
 Память: M(n) = O(n)
 ID: 68797284
 */
-
 #include <iostream>
 #include <vector>
 #include <algorithm>
 
-const int N = 20000; 
-std::vector<int> order(N);
-int n, nowSuffAdd;
+template<class T, class additionalArr>
+void Merger(int lenFirst, T* firstArr, int lenSecond, T* secondArr, bool (*f)(T&, T&, additionalArr&, int&, int&), additionalArr& order, int& n, int& nowSuffAdd)
+{
+	T* tempArr = new T[lenSecond];
+	for (int i = 0; i < lenSecond; i++)
+	{
+		tempArr[i] = secondArr[i];
+	}
+	int i = lenFirst - 1;
+	int j = lenSecond - 1;
+	int end = lenFirst + lenSecond - 1;
+	while (j > -1)
+	{
+		if (i > -1 && f(tempArr[j], firstArr[i], order, n, nowSuffAdd))
+		{
+			firstArr[end--] = firstArr[i--];
+		}
+		else
+		{
+			firstArr[end--] = tempArr[j--];
+		}
+	}
+	delete[] tempArr;
+}
 
-int GetOrder(const int& pos) 
+template<class T, class additionalArr>
+void MergeSort(int right, T* arr, bool (*f)(T&, T&, additionalArr&, int&, int&), additionalArr& order, int& n, int& nowSuffAdd)
+{
+	if (right != 1)
+	{
+		int mid = right / 2;
+		MergeSort(mid, arr, f, order, n, nowSuffAdd);
+		MergeSort(right - mid, arr + mid, f, order, n, nowSuffAdd);
+		Merger(mid, arr, right - mid, arr + mid, f, order, n, nowSuffAdd);
+	}
+}
+
+int GetOrder(const int& pos, std::vector<int>& order, int& n)
 {
     return (pos < n) ? order[pos] : -1;
 }
 
-bool cmp(std::pair<int, int>& a, std::pair<int, int>& b)
+bool cmp(std::pair<int, int>& a, std::pair<int, int>& b, std::vector<int>& order, int& n, int& nowSuffAdd)
 {
-    return (a.first != b.first) ? a.first < b.first : GetOrder(a.second + nowSuffAdd) < GetOrder(b.second + nowSuffAdd);
+    return (a.first != b.first) ? a.first < b.first : GetOrder(a.second + nowSuffAdd, order, n) < GetOrder(b.second + nowSuffAdd, order, n);
 }
 
-std::vector<int> BuildSufArr(const std::string& s)
+std::vector<int> BuildSufArr(const std::string& s, int& n, std::vector<int>& order)
 {
-    n = (int)s.length();
     int cnt[26];
-    for (int i = 0; i < 26; i++) 
+    for (int i = 0; i < 26; i++)
     {
         cnt[i] = 0;
     }
@@ -40,55 +71,56 @@ std::vector<int> BuildSufArr(const std::string& s)
     {
         cnt[i] += cnt[i - 1];
     }
-    std::vector<std::pair<int, int>> suf;
-    for (int i = 0; i < n; i++) 
+    std::pair<int, int>* suf = new std::pair<int, int>[n];
+    for (int i = 0; i < n; i++)
     {
         order[i] = cnt[s[i] - 'a'] - 1;
-        suf.push_back({ order[i], i });
+        suf[i] = { order[i], i };
     }
-    sort(suf.begin(), suf.end(), cmp);
-    nowSuffAdd = 1;
+    int nowSuffAdd = 1;
+    MergeSort(n, suf, cmp, order, n, nowSuffAdd);
     while (nowSuffAdd <= n)
     {
-        sort(suf.begin(), suf.end(), cmp);
-        for(int i = (int)suf.size() - 2; i >= 0; i--)
+        MergeSort(n, suf, cmp, order, n, nowSuffAdd);
+        for (int i = n - 2; i >= 0; i--)
         {
             if (order[suf[i].second + nowSuffAdd] < order[suf[i + 1].second + nowSuffAdd])
             {
                 suf[i].first = i;
             }
-            else 
+            else
             {
                 suf[i].first = std::min(suf[i + 1].first, suf[i].first);
             }
         }
-        for (auto& num : suf) 
+        for (int i = 0; i < n; i++)
         {
-            order[num.second] = num.first;
+            order[suf[i].second] = suf[i].first;
         }
         nowSuffAdd += nowSuffAdd;
     }
     std::vector<int> answer;
-    for (auto& num  : suf) 
+    for (int i = 0; i < n; i++)
     {
-        answer.push_back(num.second);
+        answer.push_back(suf[i].second);
     }
     nowSuffAdd = 0;
+    delete[] suf;
     return answer;
 }
 
-std::vector<int> BuildLCP(const std::string& s, const std::vector<int>& sa) 
+std::vector<int> BuildLCP(const std::string& s, const std::vector<int>& sa)
 {
     int n = (int)s.size(), k = 0;
     std::vector<int> lcp(n, 0);
     std::vector<int> rank(n, 0);
-    for (int i = 0; i < n; i++) 
+    for (int i = 0; i < n; i++)
     {
         rank[sa[i]] = i;
     }
-    for(int i = 0; i < n; i++, k ? k-- : 0) 
+    for (int i = 0; i < n; i++, k ? k-- : 0)
     {
-        if (rank[i] == n - 1) 
+        if (rank[i] == n - 1)
         {
             k = 0;
             continue;
@@ -106,9 +138,11 @@ std::vector<int> BuildLCP(const std::string& s, const std::vector<int>& sa)
 
 int GetCount(const std::string& s)
 {
-    std::vector<int> suf_ar = BuildSufArr(s);
-    std::vector<int> lcp = BuildLCP(s, suf_ar);
-    int n = (int)s.length();
+    const int N = 20000;
+    std::vector<int> order(N);
+    int n = (int)s.size();
+    std::vector<int> sufArr = BuildSufArr(s, n, order);
+    std::vector<int> lcp = BuildLCP(s, sufArr);
     int c = 0;
     for (auto& x : lcp)
     {
