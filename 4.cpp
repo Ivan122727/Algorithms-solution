@@ -1,4 +1,4 @@
-﻿/*
+/*
 Шаблон поиска задан строкой длины m, в которой кроме обычных символов могут встречаться символы “?”.
 Найти позиции всех вхождений шаблона в тексте длины n. Каждое вхождение шаблона предполагает, что все обычные символы совпадают с соответствующими из текста, а вместо символа “?” в тексте встречается произвольный символ.
 Гарантируется, что сам “?” в тексте не встречается.
@@ -10,134 +10,124 @@ ID: 68782454
 #include <iostream>
 #include <vector>
 #include <string>
-
-const int alphabet = 26;  // количество символов в алфавите
+#include <unordered_map>
 
 struct Node
 {
-    std::vector<int> next;  // next[i] - вершина в которую переходим по букве i в обычном Боре
+    std::unordered_map<char, int> next;  // next[i] - вершина в которую переходим по букве i в обычном Боре
     bool isTerminal;  // является ли вершина терминальной
     int parent;  // номер вершины-родителя
-    int parentCh;  // символ, по которому попадаем из родителя в нашу вершину
+    char parentCh;  // символ, по которому попадаем из родителя в нашу вершину
     int link;  // суффиксная ссылка
-    std::vector<int> go;  // переходы по каждому из символов (в модифицированном Боре)
+    std::unordered_map<char, int> go;  // переходы по каждому из символов (в модифицированном Боре)
     std::vector<int> answers;  // все терминальные вершины, в которые можно попасть по суфф. ссылкам
     std::vector<int> patternNumbers;  // номера шаблонов, которым соответствует вершина
+    Node() : next({}), isTerminal(true), parent(-1), parentCh(-1), link(-1), go({}), answers({}), patternNumbers({}) {}
 };
 
-class Automate
+class Automata
 {
 public:
-    Automate();
+    Automata();
     void AddString(const std::string& s, const int& patternNumber);
-    int Go(const int& vertex, const int& ch);
+    int Go(const int& vertex, const char& ch);
     int SuffLink(const int& vertex);
     std::vector<int> FindingTerminalVertices(const int& vertex);
     std::vector<int> GetPattern(const int& vertex);
 private:
-    std::vector<Node> bor;
+    std::vector<Node> trie;
 };
 
-Automate::Automate() 
+Automata::Automata()
 {
     Node root;
-    root.next.assign(alphabet, -1);
-    root.isTerminal = false;
-    root.link = 0;
-    root.go.assign(alphabet, -1);
-    root.parent = -1;
-    bor.push_back(root);
+    root.link = -1;
+    trie.push_back(root);
 }
 
-void Automate::AddString(const std::string& s, const int& patternNumber)
+void Automata::AddString(const std::string& s, const int& patternNumber)
 {
     int currentVertex = 0;
-    for (auto& ch : s) 
+    for (auto& ch : s)
     {
-        int c = (int)(ch - 'a');
-        if(bor[currentVertex].next[c] == -1)
+        if (!trie[currentVertex].next[ch])
         {
-            size_t borSize = bor.size();
+            size_t trieSize = trie.size();
             Node newVertex;
-            newVertex.next.assign(alphabet, -1);
-            newVertex.isTerminal = false;
-            newVertex.go.assign(26, -1);
-            newVertex.link = -1;
             newVertex.parent = currentVertex;
-            newVertex.parentCh = c;
-            bor.push_back(newVertex);
-            bor[currentVertex].next[c] = bor.size() - 1;
+            newVertex.parentCh = ch;
+            trie.push_back(newVertex);
+            trie[currentVertex].next[ch] = trie.size() - 1;
         }
-        currentVertex = bor[currentVertex].next[c];
+        currentVertex = trie[currentVertex].next[ch];
     }
-    bor[currentVertex].isTerminal = true;
-    bor[currentVertex].patternNumbers.push_back(patternNumber);
+    trie[currentVertex].patternNumbers.push_back(patternNumber);
 }
 
-int Automate::Go(const int& vertex, const int& ch)
+int Automata::Go(const int& vertex, const char& ch)
 {
-    if (bor[vertex].go[ch] == -1)
+    if (!trie[vertex].go[ch])
     {
-        if (bor[vertex].next[ch] != -1)
+        if (trie[vertex].next[ch])
         {
-            bor[vertex].go[ch] = bor[vertex].next[ch];
+            trie[vertex].go[ch] = trie[vertex].next[ch];
         }
         else
         {
             if (vertex == 0)
             {
-                bor[vertex].go[ch] = 0;
+                trie[vertex].go[ch] = 0;
             }
             else
             {
-                bor[vertex].go[ch] = Go(SuffLink(vertex), ch);
+                trie[vertex].go[ch] = Go(SuffLink(vertex), ch);
             }
         }
     }
-    return bor[vertex].go[ch];
+    return trie[vertex].go[ch];
 }
 
-int Automate::SuffLink(const int& vertex) 
+int Automata::SuffLink(const int& vertex)
 {
-    if (bor[vertex].link == -1) 
+    if (trie[vertex].link == -1)
     {
-        if (vertex == 0 || bor[vertex].parent == 0) 
+        if (vertex == 0 || trie[vertex].parent == 0)
         {
-            bor[vertex].link = 0;
+            trie[vertex].link = 0;
         }
-        else 
+        else
         {
-            bor[vertex].link = Go(SuffLink(bor[vertex].parent), bor[vertex].parentCh);
+            trie[vertex].link = Go(SuffLink(trie[vertex].parent), trie[vertex].parentCh);
         }
     }
-    return bor[vertex].link;
+    return trie[vertex].link;
 }
 
-std::vector<int> Automate::FindingTerminalVertices(const int& vertex)
+std::vector<int> Automata::FindingTerminalVertices(const int& vertex)
 {
-    if (bor[vertex].answers.size() > 0)
+    if (trie[vertex].answers.size() > 0)
     {
-        return bor[vertex].answers;
+        return trie[vertex].answers;
     }
-    int current_vertex = vertex;
-    while (current_vertex != 0) 
+    int currentVertex = vertex;
+    while (currentVertex != 0)
     {
-        if (bor[current_vertex].isTerminal) 
+        if (trie[currentVertex].isTerminal)
         {
-            bor[vertex].answers.push_back(current_vertex);
+            trie[vertex].answers.push_back(currentVertex);
         }
-        current_vertex = SuffLink(current_vertex);
+        currentVertex = SuffLink(currentVertex);
     }
-    return bor[vertex].answers;
+    return trie[vertex].answers;
 }
 
-std::vector<int> Automate::GetPattern(const int& vertex)
+std::vector<int> Automata::GetPattern(const int& vertex)
 {
-    if (bor[vertex].isTerminal) 
+    if (trie[vertex].isTerminal)
     {
-        return bor[vertex].patternNumbers;
+        return trie[vertex].patternNumbers;
     }
-    else 
+    else
     {
         return std::vector<int>(0);
     }
@@ -145,15 +135,15 @@ std::vector<int> Automate::GetPattern(const int& vertex)
 
 std::vector<int> GetOccurrences(const std::string& sample, const std::string& s)
 {
-    auto automate = new Automate;
+    Automata automata;
     std::string currentStr = "";
     std::vector<int> l(0);  // вхождения шаблонов без '?' в исходном шаблоне
     std::vector<int> d(0);  // длины шаблонов без '?'
     bool flag = true;  // последний прочитанный символ - '?' ?
-    for (int i = 0; i < sample.length(); i++) 
+    for (int i = 0; i < sample.length(); i++)
     {
         char ch = sample[i];
-        if (ch != '?') 
+        if (ch != '?')
         {
             currentStr += ch;
             if (flag)
@@ -162,34 +152,34 @@ std::vector<int> GetOccurrences(const std::string& sample, const std::string& s)
             }
             flag = false;
         }
-        else 
+        else
         {
             if (currentStr != "")
             {
-                automate->AddString(currentStr, l.size() - 1);
+                automata.AddString(currentStr, l.size() - 1);
                 d.push_back(currentStr.length());
                 currentStr = "";
             }
             flag = true;
         }
     }
-    automate->AddString(currentStr, l.size() - 1);
+    automata.AddString(currentStr, l.size() - 1);
     d.push_back(currentStr.length());
     std::vector<int> countOccurrences(s.length(), 0);  // c[i] - количество возможных вхождений на i символе
     int currentVertex = 0;
-    for (int i = 0; i < s.length(); i++) 
+    for (int i = 0; i < s.length(); i++)
     {
-        int ch = s[i] - 'a';
-        currentVertex = automate->Go(currentVertex, ch);
-        std::vector <int> terminalVertices = automate->FindingTerminalVertices(currentVertex); 
+        char ch = s[i];
+        currentVertex = automata.Go(currentVertex, ch);
+        std::vector <int> terminalVertices = automata.FindingTerminalVertices(currentVertex);
         // для каждой вершины из terminalVertices найдем, какому шаблону она соответствует, а затем по номеру шаблона
         // определим, на какой позиции она находится в исходном шаблоне с "?"
-        for(auto& vertex : terminalVertices) 
+        for (auto& vertex : terminalVertices)
         {
-            std::vector<int> patternNumbers = automate->GetPattern(vertex);
-            for (auto& patternNumber : patternNumbers) 
+            std::vector<int> patternNumbers = automata.GetPattern(vertex);
+            for (auto& patternNumber : patternNumbers)
             {
-                if (i - d[patternNumber] - l[patternNumber] + 1 >= 0) 
+                if (i - d[patternNumber] - l[patternNumber] + 1 >= 0)
                 {
                     countOccurrences[i - d[patternNumber] - l[patternNumber] + 1]++;
                 }
@@ -197,7 +187,7 @@ std::vector<int> GetOccurrences(const std::string& sample, const std::string& s)
         }
     }
     std::vector<int> occurrences;
-    for (int i = 0; i < countOccurrences.size(); i++) 
+    for (int i = 0; i < countOccurrences.size(); i++)
     {
         if (countOccurrences[i] == l.size() && i + sample.length() <= s.length())
         {
@@ -207,7 +197,7 @@ std::vector<int> GetOccurrences(const std::string& sample, const std::string& s)
     return occurrences;
 }
 
-int main() 
+int main()
 {
     std::string sample, s;
     std::cin >> sample >> s;
