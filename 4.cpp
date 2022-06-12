@@ -23,6 +23,7 @@ struct Node
     std::vector<int> answers;  // все терминальные вершины, в которые можно попасть по суфф. ссылкам
     std::vector<int> patternNumbers;  // номера шаблонов, которым соответствует вершина
     Node() : next({}), isTerminal(true), parent(-1), parentCh(-1), link(-1), go({}), answers({}), patternNumbers({}) {}
+    Node(const int& parent, const char& parentCh) : next({}), isTerminal(true), parent(parent), parentCh(parentCh), link(-1), go({}), answers({}), patternNumbers({}) {}
 };
 
 class Automata
@@ -53,9 +54,7 @@ void Automata::AddString(const std::string& s, const int& patternNumber)
         if (!trie[currentVertex].next[ch])
         {
             size_t trieSize = trie.size();
-            Node newVertex;
-            newVertex.parent = currentVertex;
-            newVertex.parentCh = ch;
+            Node newVertex(currentVertex, ch);
             trie.push_back(newVertex);
             trie[currentVertex].next[ch] = trie.size() - 1;
         }
@@ -137,8 +136,8 @@ std::vector<int> GetOccurrences(const std::string& sample, const std::string& s)
 {
     Automata automata;
     std::string currentStr = "";
-    std::vector<int> l(0);  // вхождения шаблонов без '?' в исходном шаблоне
-    std::vector<int> d(0);  // длины шаблонов без '?'
+    std::vector<int> sampleIndex(0);  // вхождения шаблонов без '?' в исходном шаблоне
+    std::vector<int> sampleLength(0);  // длины шаблонов без '?'
     bool flag = true;  // последний прочитанный символ - '?' ?
     for (int i = 0; i < sample.length(); i++)
     {
@@ -148,7 +147,7 @@ std::vector<int> GetOccurrences(const std::string& sample, const std::string& s)
             currentStr += ch;
             if (flag)
             {
-                l.push_back(i);
+                sampleIndex.push_back(i);
             }
             flag = false;
         }
@@ -156,15 +155,15 @@ std::vector<int> GetOccurrences(const std::string& sample, const std::string& s)
         {
             if (currentStr != "")
             {
-                automata.AddString(currentStr, l.size() - 1);
-                d.push_back(currentStr.length());
+                automata.AddString(currentStr, sampleIndex.size() - 1);
+                sampleLength.push_back(currentStr.length());
                 currentStr = "";
             }
             flag = true;
         }
     }
-    automata.AddString(currentStr, l.size() - 1);
-    d.push_back(currentStr.length());
+    automata.AddString(currentStr, sampleIndex.size() - 1);
+    sampleLength.push_back(currentStr.length());
     std::vector<int> countOccurrences(s.length(), 0);  // c[i] - количество возможных вхождений на i символе
     int currentVertex = 0;
     for (int i = 0; i < s.length(); i++)
@@ -179,9 +178,9 @@ std::vector<int> GetOccurrences(const std::string& sample, const std::string& s)
             std::vector<int> patternNumbers = automata.GetPattern(vertex);
             for (auto& patternNumber : patternNumbers)
             {
-                if (i - d[patternNumber] - l[patternNumber] + 1 >= 0)
+                if (i - sampleLength[patternNumber] - sampleIndex[patternNumber] + 1 >= 0)
                 {
-                    countOccurrences[i - d[patternNumber] - l[patternNumber] + 1]++;
+                    countOccurrences[i - sampleLength[patternNumber] - sampleIndex[patternNumber] + 1]++;
                 }
             }
         }
@@ -189,7 +188,7 @@ std::vector<int> GetOccurrences(const std::string& sample, const std::string& s)
     std::vector<int> occurrences;
     for (int i = 0; i < countOccurrences.size(); i++)
     {
-        if (countOccurrences[i] == l.size() && i + sample.length() <= s.length())
+        if (countOccurrences[i] == sampleIndex.size() && i + sample.length() <= s.length())
         {
             occurrences.push_back(i);
         }
