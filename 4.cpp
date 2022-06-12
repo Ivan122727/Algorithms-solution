@@ -1,143 +1,210 @@
 /*
-Требуется отыскать самый короткий маршрут между городами.
-Из города может выходить дорога, которая возвращается в этот же город.
-Требуемое время работы O((N + M)log N),
-Асимптотика: T(N, M) = O((N + M)log N)
-Память: M(n) = O(n)
-ID: 67974928
+Шаблон поиска задан строкой длины m, в которой кроме обычных символов могут встречаться символы “?”.
+Найти позиции всех вхождений шаблона в тексте длины n. Каждое вхождение шаблона предполагает, что все обычные символы совпадают с соответствующими из текста, а вместо символа “?” в тексте встречается произвольный символ.
+Гарантируется, что сам “?” в тексте не встречается.
+Время работы - O(n + m + Z), где Z - общее число вхождений подстрок шаблона “между вопросиками” в исходном тексте.
+Время: T(n, m, Z) = O(n + m + Z)
+Память: M(n, m) = O(n + m)
+ID: 68782454
 */
-#include <algorithm>
 #include <iostream>
-#include <set>
 #include <vector>
+#include <string>
+#include <unordered_map>
 
-class ListGraph
+struct Node
 {
-public:
-    ListGraph(int size);
-    virtual void AddEdge(int from, int to, int weight);
-    virtual int VerticesCount() const;
-    virtual void FindAllAdjacentIn(int vertex, std::vector<std::pair<int, int>>& vertices) const;
-    virtual void FindAllAdjacentOut(int vertex, std::vector<std::pair<int, int>>& vertices) const;
-    virtual void ChangeLen(int from, int to, int len);
-private:
-    int size;
-    std::vector<std::vector<std::pair<int, int>>> g;
-    std::vector<std::vector<std::pair<int, int>>> reversedG;
+    std::unordered_map<char, int> next;  // next[i] - вершина в которую переходим по букве i в обычном Боре
+    bool isTerminal;  // является ли вершина терминальной
+    int parent;  // номер вершины-родителя
+    char parentCh;  // символ, по которому попадаем из родителя в нашу вершину
+    int link;  // суффиксная ссылка
+    std::unordered_map<char, int> go;  // переходы по каждому из символов (в модифицированном Боре)
+    std::vector<int> answers;  // все терминальные вершины, в которые можно попасть по суфф. ссылкам
+    std::vector<int> patternNumbers;  // номера шаблонов, которым соответствует вершина
+    Node() : next({}), isTerminal(true), parent(-1), parentCh(-1), link(-1), go({}), answers({}), patternNumbers({}) {}
+    Node(const int& parent, const char& parentCh) : next({}), isTerminal(true), parent(parent), parentCh(parentCh), link(-1), go({}), answers({}), patternNumbers({}) {}
 };
 
-ListGraph::ListGraph(int size) : size(size), g(std::vector<std::vector<std::pair<int, int>>>(size, std::vector<std::pair<int, int>>())), reversedG(std::vector<std::vector<std::pair<int, int>>>(size, std::vector<std::pair<int, int>>())) {}
-
-void ListGraph::AddEdge(int from, int to, int weight)
+class Automata
 {
-    g[from].push_back({ to, weight });
-    reversedG[to].push_back({ from, weight });
+public:
+    Automata();
+    void AddString(const std::string& s, const int& patternNumber);
+    int Go(const int& vertex, const char& ch);
+    int SuffLink(const int& vertex);
+    std::vector<int> FindingTerminalVertices(const int& vertex);
+    std::vector<int> GetPattern(const int& vertex);
+private:
+    std::vector<Node> trie;
+};
+
+Automata::Automata()
+{
+    Node root;
+    root.link = -1;
+    trie.push_back(root);
 }
 
-int ListGraph::VerticesCount() const
+void Automata::AddString(const std::string& s, const int& patternNumber)
 {
-    return size;
-}
-
-void ListGraph::FindAllAdjacentIn(int vertex, std::vector<std::pair<int, int>>& vertices) const
-{
-    for (auto x : reversedG[vertex])
+    int currentVertex = 0;
+    for (auto& ch : s)
     {
-        vertices.push_back(x);
-    }
-}
-
-void ListGraph::FindAllAdjacentOut(int vertex, std::vector<std::pair<int, int>>& vertices) const
-{
-    for (auto x : g[vertex])
-    {
-        vertices.push_back(x);
-    }
-}
-
-void ListGraph::ChangeLen(int from, int to, int len)
-{
-    for (int i = 0; i < g[from].size(); i++)
-    {
-        if (g[from][i].first == to)
+        if (!trie[currentVertex].next[ch])
         {
-            g[from][i].second = len;
+            size_t trieSize = trie.size();
+            Node newVertex(currentVertex, ch);
+            trie.push_back(newVertex);
+            trie[currentVertex].next[ch] = trie.size() - 1;
         }
+        currentVertex = trie[currentVertex].next[ch];
     }
+    trie[currentVertex].patternNumbers.push_back(patternNumber);
 }
 
-int GetMinWay(int from,  int to, int n, ListGraph& g)
+int Automata::Go(const int& vertex, const char& ch)
 {
-    std::vector<int> distance(n, 1000000);
-    distance[from] = 0;
-    std::set<std::pair<int, int>> s;
-    s.insert({ distance[from], from });
-    while (!s.empty())
+    if (!trie[vertex].go[ch])
     {
-        int v = s.begin()->second;
-        s.erase(s.begin());
-        std::vector<std::pair<int, int>> vertices;
-        g.FindAllAdjacentIn(v, vertices);
-        for (auto& x : vertices)
+        if (trie[vertex].next[ch])
         {
-            if (distance[v] + x.second < distance[x.first])
+            trie[vertex].go[ch] = trie[vertex].next[ch];
+        }
+        else
+        {
+            if (vertex == 0)
             {
-                s.erase({ distance[x.first], x.first });
-                distance[x.first] = distance[v] + x.second;
-                s.insert({ distance[x.first], x.first });
+                trie[vertex].go[ch] = 0;
+            }
+            else
+            {
+                trie[vertex].go[ch] = Go(SuffLink(vertex), ch);
             }
         }
     }
-    return distance[to];
+    return trie[vertex].go[ch];
+}
+
+int Automata::SuffLink(const int& vertex)
+{
+    if (trie[vertex].link == -1)
+    {
+        if (vertex == 0 || trie[vertex].parent == 0)
+        {
+            trie[vertex].link = 0;
+        }
+        else
+        {
+            trie[vertex].link = Go(SuffLink(trie[vertex].parent), trie[vertex].parentCh);
+        }
+    }
+    return trie[vertex].link;
+}
+
+std::vector<int> Automata::FindingTerminalVertices(const int& vertex)
+{
+    if (trie[vertex].answers.size() > 0)
+    {
+        return trie[vertex].answers;
+    }
+    int currentVertex = vertex;
+    while (currentVertex != 0)
+    {
+        if (trie[currentVertex].isTerminal)
+        {
+            trie[vertex].answers.push_back(currentVertex);
+        }
+        currentVertex = SuffLink(currentVertex);
+    }
+    return trie[vertex].answers;
+}
+
+std::vector<int> Automata::GetPattern(const int& vertex)
+{
+    if (trie[vertex].isTerminal)
+    {
+        return trie[vertex].patternNumbers;
+    }
+    else
+    {
+        return std::vector<int>(0);
+    }
+}
+
+std::vector<int> GetOccurrences(const std::string& sample, const std::string& s)
+{
+    Automata automata;
+    std::string currentStr = "";
+    std::vector<int> sampleIndex(0);  // вхождения шаблонов без '?' в исходном шаблоне
+    std::vector<int> sampleLength(0);  // длины шаблонов без '?'
+    bool flag = true;  // последний прочитанный символ - '?' ?
+    for (int i = 0; i < sample.length(); i++)
+    {
+        char ch = sample[i];
+        if (ch != '?')
+        {
+            currentStr += ch;
+            if (flag)
+            {
+                sampleIndex.push_back(i);
+            }
+            flag = false;
+        }
+        else
+        {
+            if (currentStr != "")
+            {
+                automata.AddString(currentStr, sampleIndex.size() - 1);
+                sampleLength.push_back(currentStr.length());
+                currentStr = "";
+            }
+            flag = true;
+        }
+    }
+    automata.AddString(currentStr, sampleIndex.size() - 1);
+    sampleLength.push_back(currentStr.length());
+    std::vector<int> countOccurrences(s.length(), 0);  // c[i] - количество возможных вхождений на i символе
+    int currentVertex = 0;
+    for (int i = 0; i < s.length(); i++)
+    {
+        char ch = s[i];
+        currentVertex = automata.Go(currentVertex, ch);
+        std::vector <int> terminalVertices = automata.FindingTerminalVertices(currentVertex);
+        // для каждой вершины из terminalVertices найдем, какому шаблону она соответствует, а затем по номеру шаблона
+        // определим, на какой позиции она находится в исходном шаблоне с "?"
+        for (auto& vertex : terminalVertices)
+        {
+            std::vector<int> patternNumbers = automata.GetPattern(vertex);
+            for (auto& patternNumber : patternNumbers)
+            {
+                if (i - sampleLength[patternNumber] - sampleIndex[patternNumber] + 1 >= 0)
+                {
+                    countOccurrences[i - sampleLength[patternNumber] - sampleIndex[patternNumber] + 1]++;
+                }
+            }
+        }
+    }
+    std::vector<int> occurrences;
+    for (int i = 0; i < countOccurrences.size(); i++)
+    {
+        if (countOccurrences[i] == sampleIndex.size() && i + sample.length() <= s.length())
+        {
+            occurrences.push_back(i);
+        }
+    }
+    return occurrences;
 }
 
 int main()
 {
-    int n, m;
-    std::cin >> n >> m;
-    ListGraph g(n);
-    for (int i = 0; i < m; i++)
+    std::string sample, s;
+    std::cin >> sample >> s;
+    std::vector<int> occurrences = GetOccurrences(sample, s);
+    for (auto& occurrence : occurrences)
     {
-        int a, b, c;
-        std::cin >> a >> b >> c;
-        if (a == b) continue;
-        bool isSecondRoad = false;
-        std::vector<std::pair<int, int>> vertices;
-        g.FindAllAdjacentIn(a, vertices);
-        for (auto& x : vertices)
-        {
-            if (x.first == b)
-            {
-                isSecondRoad = true;
-                if (x.second > c)
-                {
-                    std::cout << x.second << "\n";
-                    g.ChangeLen(a, x.first, c);
-                }
-                break;
-            }
-        }
-        vertices.clear();
-        g.FindAllAdjacentIn(b, vertices);
-        for (auto& x : vertices)
-        {
-            if (x.first == a)
-            {
-                if (x.second > c)
-                {
-                    g.ChangeLen(b, x.first, c);
-                }
-                break;
-            }
-        }
-        if (!isSecondRoad)
-        {
-            g.AddEdge(a, b, c);
-            g.AddEdge(b, a, c);
-        }
+        std::cout << occurrence << " ";
     }
-    int from, to;
-    std::cin >> from >> to;
-    std::cout << GetMinWay(from, to, n, g) << "\n";
+    std::cout << "\n";
     return 0;
 }
